@@ -1,10 +1,7 @@
 <div class="file-pane" [class.active]="isActive" (click)="onPaneClick()" (keydown)="onKeyDown($event)" tabindex="0">
   <!-- Drive Bar -->
   <div class="drive-bar">
-    <button 
-      *ngFor="let drive of drives" 
-      class="drive-button"
-      (click)="onDriveSelect(drive)"
+    <button *ngFor="let drive of drives" class="drive-button" (click)="onDriveSelect(drive)"
       [title]="drive.Label + ' (' + formatSize(drive.FreeSpace) + ' free)'">
       💾 {{ drive.Name.replace('\\', '') }}
     </button>
@@ -12,8 +9,8 @@
 
   <!-- Path Bar -->
   <div class="path-bar">
-    <span class="path-icon">📂</span>
-    <span class="path-text">{{ currentPath || 'Select a drive' }}</span>
+    <app-breadcrumb [path]="currentPath" (navigate)="onBreadcrumbNavigate($event)">
+    </app-breadcrumb>
   </div>
 
   <!-- Header -->
@@ -26,13 +23,8 @@
 
   <!-- File List with Virtual Scroll -->
   <cdk-virtual-scroll-viewport itemSize="28" class="file-list">
-    <div 
-      *cdkVirtualFor="let item of items; let i = index"
-      class="file-item"
-      [class.selected]="i === selectedIndex"
-      [class.directory]="item.IsDirectory"
-      (click)="onItemClick(item, i)"
-      (dblclick)="onItemDoubleClick(item)">
+    <div *cdkVirtualFor="let item of items; let i = index" class="file-item" [class.selected]="i === selectedIndex"
+      [class.directory]="item.IsDirectory" (click)="onItemClick(item, i)" (dblclick)="onItemDoubleClick(item)">
       <span class="col-icon">{{ getFileIcon(item) }}</span>
       <span class="col-name" [title]="item.Name">{{ item.Name }}</span>
       <span class="col-size">{{ item.IsDirectory ? '&lt;DIR&gt;' : formatSize(item.Size) }}</span>

@@ -2,12 +2,13 @@ import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ViewChild } 
 import { CommonModule } from '@angular/common';
 import { ScrollingModule, CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { BridgeService, FileSystemItem, DriveItem } from '../services/bridge.service';
+import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
     selector: 'app-file-pane',
     standalone: true,
-    imports: [CommonModule, ScrollingModule],
+    imports: [CommonModule, ScrollingModule, BreadcrumbComponent],
     templateUrl: './file-pane.component.html',
     styleUrls: ['./file-pane.component.scss']
 })
@@ -79,6 +80,10 @@ export class FilePaneComponent implements OnInit, OnDestroy {
     onDriveSelect(drive: DriveItem): void {
         this.activated.emit(this.paneId);
         this.bridgeService.getDirectoryContents(drive.Name, this.paneId);
+    }
+
+    onBreadcrumbNavigate(path: string): void {
+        this.bridgeService.getDirectoryContents(path, this.paneId);
     }
 
     onItemClick(item: FileSystemItem, index: number): void {
