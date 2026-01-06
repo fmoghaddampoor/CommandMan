@@ -38,8 +38,8 @@ export interface PaneState {
   providedIn: 'root'
 })
 export class BridgeService {
-  private leftPane$ = new BehaviorSubject<PaneState>({ items: [], currentPath: '' });
-  private rightPane$ = new BehaviorSubject<PaneState>({ items: [], currentPath: '' });
+  public leftPane$ = new BehaviorSubject<PaneState>({ items: [], currentPath: '' });
+  public rightPane$ = new BehaviorSubject<PaneState>({ items: [], currentPath: '' });
   private drives$ = new BehaviorSubject<DriveItem[]>([]);
   private appInfo$ = new BehaviorSubject<{ Version: string, AppName: string } | null>(null);
   private error$ = new Subject<string>();
@@ -160,6 +160,14 @@ export class BridgeService {
 
   renameItem(oldPath: string, newName: string, paneId: 'left' | 'right'): void {
     this.postMessage({ Action: 'renameItem', Path: oldPath, Name: newName, PaneId: paneId });
+  }
+
+  copyItems(items: string[], targetPath: string, paneId: 'left' | 'right'): void {
+    this.postMessage({ Action: 'copyItems', Items: items, TargetPath: targetPath, PaneId: paneId });
+  }
+
+  moveItems(items: string[], targetPath: string, paneId: 'left' | 'right'): void {
+    this.postMessage({ Action: 'moveItems', Items: items, TargetPath: targetPath, PaneId: paneId });
   }
 
   getCurrentPath(paneId: 'left' | 'right'): string {

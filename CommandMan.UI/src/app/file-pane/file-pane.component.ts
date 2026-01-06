@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ViewChild, HostBinding } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ScrollingModule, CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { BridgeService, FileSystemItem, DriveItem } from '../services/bridge.service';
@@ -15,7 +15,7 @@ import { Subject, takeUntil } from 'rxjs';
 export class FilePaneComponent implements OnInit, OnDestroy {
     @ViewChild(CdkVirtualScrollViewport) viewport!: CdkVirtualScrollViewport;
     @Input() paneId: 'left' | 'right' = 'left';
-    @Input() isActive = false;
+    @Input() @HostBinding('class.active') isActive = false;
     @Output() activated = new EventEmitter<'left' | 'right'>();
     @Output() renameRequested = new EventEmitter<FileSystemItem>();
 
@@ -151,6 +151,14 @@ export class FilePaneComponent implements OnInit, OnDestroy {
         // For now, let's use a simple prompt or emit.
         // I'll add an @Output for rename requested.
         this.renameRequested.emit(item);
+    }
+
+    getSelectedItems(): FileSystemItem[] {
+        if (this.selectedIndex >= 0 && this.selectedIndex < this.items.length) {
+            const item = this.items[this.selectedIndex];
+            return item.Name !== '..' ? [item] : [];
+        }
+        return [];
     }
 
     formatSize(bytes: number): string {

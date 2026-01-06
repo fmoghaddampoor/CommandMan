@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Windows;
 using Microsoft.Web.WebView2.Core;
+using Microsoft.AspNetCore.SignalR;
 
 namespace CommandMan.Shell;
 
@@ -92,6 +93,14 @@ public partial class MainWindow : Window
                     break;
                 case "renameItem":
                     HandleRenameItem(request.Path, request.Name, request.PaneId);
+                    break;
+                case "copyItems":
+                    if (request.Items != null && request.TargetPath != null)
+                        _ = HandleCopyItems(request.Items, request.TargetPath, request.PaneId);
+                    break;
+                case "moveItems":
+                    if (request.Items != null && request.TargetPath != null)
+                        _ = HandleMoveItems(request.Items, request.TargetPath, request.PaneId);
                     break;
             }
         }
@@ -190,6 +199,104 @@ public partial class MainWindow : Window
         }
     }
 
+
+    private async Task HandleCopyItems(List<string> items, string targetPath, string? paneId)
+    {
+        try
+        {
+            var totalCount = items.Count;
+            for (int i = 0; i < totalCount; i++)
+            {
+                var item = items[i];
+                var fileName = Path.GetFileName(item);
+                var destPath = Path.Combine(targetPath, fileName);
+
+                // Report progress
+                int progress = (int)((double)i / totalCount * 100);
+                if (SignalRServer.HubContext != null)
+                    await SignalRServer.HubContext.Clients.All.SendAsync("ReceiveProgress", $"Copying {fileName}...", progress);
+
+                if (Directory.Exists(item))
+                {
+                    await Task.Run(() => CopyDirectory(item, destPath));
+                }
+                else
+                {
+                    await Task.Run(() => File.Copy(item, destPath, true));
+                }
+            }
+
+            if (SignalRServer.HubContext != null)
+                await SignalRServer.HubContext.Clients.All.SendAsync("ReceiveProgress", "Complete", 100);
+            
+            await Task.Delay(500); // Small delay to show completion
+            if (SignalRServer.HubContext != null)
+                await SignalRServer.HubContext.Clients.All.SendAsync("ReceiveProgress", null, 0);
+
+            // Refresh target pane
+            HandleGetDirectoryContents(targetPath, paneId == "left" ? "right" : "left");
+        }
+        catch (Exception ex)
+        {
+            SendErrorToWebView($"Copy failed: {ex.Message}");
+        }
+    }
+
+    private async Task HandleMoveItems(List<string> items, string targetPath, string? paneId)
+    {
+        try
+        {
+            var totalCount = items.Count;
+            for (int i = 0; i < totalCount; i++)
+            {
+                var item = items[i];
+                var fileName = Path.GetFileName(item);
+                var destPath = Path.Combine(targetPath, fileName);
+
+                int progress = (int)((double)i / totalCount * 100);
+                if (SignalRServer.HubContext != null)
+                    await SignalRServer.HubContext.Clients.All.SendAsync("ReceiveProgress", $"Moving {fileName}...", progress);
+
+                if (Directory.Exists(item))
+                {
+                    await Task.Run(() => Directory.Move(item, destPath));
+                }
+                else
+                {
+                    await Task.Run(() => File.Move(item, destPath, true));
+                }
+            }
+
+            if (SignalRServer.HubContext != null)
+                await SignalRServer.HubContext.Clients.All.SendAsync("ReceiveProgress", "Complete", 100);
+            
+            await Task.Delay(500);
+            if (SignalRServer.HubContext != null)
+                await SignalRServer.HubContext.Clients.All.SendAsync("ReceiveProgress", null, 0);
+
+            // Refresh both panes
+            HandleGetDirectoryContents(targetPath, paneId == "left" ? "right" : "left");
+            var sourcePath = Path.GetDirectoryName(items[0]);
+            HandleGetDirectoryContents(sourcePath, paneId);
+        }
+        catch (Exception ex)
+        {
+            SendErrorToWebView($"Move failed: {ex.Message}");
+        }
+    }
+
+    private void CopyDirectory(string sourceDir, string destDir)
+    {
+        Directory.CreateDirectory(destDir);
+        foreach (var file in Directory.GetFiles(sourceDir))
+        {
+            File.Copy(file, Path.Combine(destDir, Path.GetFileName(file)), true);
+        }
+        foreach (var subDir in Directory.GetDirectories(sourceDir))
+        {
+            CopyDirectory(subDir, Path.Combine(destDir, Path.GetFileName(subDir)));
+        }
+    }
 
     private void HandleGetAppInfo()
     {
@@ -406,6 +513,12 @@ public class BridgeRequest
 
     [JsonPropertyName("Name")]
     public string? Name { get; set; }
+
+    [JsonPropertyName("Items")]
+    public List<string>? Items { get; set; }
+
+    [JsonPropertyName("TargetPath")]
+    public string? TargetPath { get; set; }
 
     [JsonPropertyName("PaneId")]
     public string? PaneId { get; set; }

@@ -1,4 +1,4 @@
-<div class="commander-container" (keydown)="onKeyDown($event)">
+<div class="commander-container">
   <!-- Header -->
   <header class="app-header">
     <div class="logo">
@@ -6,22 +6,26 @@
       <span class="logo-text">CommandMan</span>
     </div>
     <div class="header-actions">
-      <button class="header-btn" title="Copy (F5)">📋 Copy</button>
-      <button class="header-btn" title="Move (F6)">✂️ Move</button>
-      <button class="header-btn" title="Delete (F8)">🗑️ Delete</button>
-      <button class="header-btn" title="New Folder (F7)" (click)="showNewFolder = true">📁 New Folder</button>
+      <div class="header-btn" title="Copy (F5)" (click)="copySelectedItems()">📋 Copy</div>
+      <div class="header-btn" title="Move (F6)" (click)="moveSelectedItems()">✂️ Move</div>
+      <div class="header-btn" title="Delete (F8)" (click)="deleteSelectedItems()">🗑️
+        Delete
+      </div>
+      <div class="header-btn" title="New Folder (F7)" (click)="showNewFolder = true">📁
+        New
+        Folder</div>
     </div>
   </header>
 
   <!-- Dual Pane Container -->
   <main class="panes-container">
-    <app-file-pane paneId="left" [isActive]="activePane === 'left'" (activated)="onPaneActivated($event)"
+    <app-file-pane #leftPane paneId="left" [isActive]="activePane === 'left'" (activated)="onPaneActivated($event)"
       (renameRequested)="onRenameRequested($event)">
     </app-file-pane>
 
     <div class="pane-divider"></div>
 
-    <app-file-pane paneId="right" [isActive]="activePane === 'right'" (activated)="onPaneActivated($event)"
+    <app-file-pane #rightPane paneId="right" [isActive]="activePane === 'right'" (activated)="onPaneActivated($event)"
       (renameRequested)="onRenameRequested($event)">
     </app-file-pane>
   </main>
@@ -31,11 +35,12 @@
     <div class="fn-key" (click)="showAbout = true" style="cursor: pointer;"><span class="key">F1</span> Help</div>
     <div class="fn-key"><span class="key">F3</span> View</div>
     <div class="fn-key"><span class="key">F4</span> Edit</div>
-    <div class="fn-key"><span class="key">F5</span> Copy</div>
-    <div class="fn-key"><span class="key">F6</span> Move</div>
+    <div class="fn-key" (click)="copySelectedItems()" style="cursor: pointer;"><span class="key">F5</span> Copy</div>
+    <div class="fn-key" (click)="moveSelectedItems()" style="cursor: pointer;"><span class="key">F6</span> Move</div>
     <div class="fn-key" (click)="showNewFolder = true" style="cursor: pointer;"><span class="key">F7</span> NewFolder
     </div>
-    <div class="fn-key"><span class="key">F8</span> Delete</div>
+    <div class="fn-key" (click)="deleteSelectedItems()" style="cursor: pointer;"><span class="key">F8</span> Delete
+    </div>
     <div class="fn-key"><span class="key">Tab</span> Switch Pane</div>
   </footer>
 
@@ -47,4 +52,6 @@
   <app-input-dialog *ngIf="itemToRename" title="Rename" [initialValue]="itemToRename.Name" prompt="Enter new name:"
     (submitted)="renameItem($event)" (closed)="itemToRename = null">
   </app-input-dialog>
+
+  <app-progress-overlay></app-progress-overlay>
 </div>
