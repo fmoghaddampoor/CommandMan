@@ -72,6 +72,7 @@ export class BridgeService {
       setTimeout(() => {
         this.getDrives();
         this.getAppInfo();
+        this.getState();
       }, 100);
     } else {
       console.log('Not running inside WebView2 - using mock data');
