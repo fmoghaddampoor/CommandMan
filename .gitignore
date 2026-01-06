@@ -1,0 +1,26 @@
+# Visual Studio
+.vs/
+bin/
+obj/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Angular/Node
+dist/
+node_modules/
+.angular/
+
+# WebView2
+*.WebView2/
+
+# User-specific
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.launch
+*.lock
