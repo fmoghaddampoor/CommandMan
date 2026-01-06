@@ -5,6 +5,7 @@ import { AboutDialogComponent } from './about-dialog/about-dialog.component';
 import { InputDialogComponent } from './input-dialog/input-dialog.component';
 import { ProgressOverlayComponent } from './progress-overlay/progress-overlay.component';
 import { BridgeService } from './services/bridge.service';
+import { ProgressService } from './services/progress.service';
 
 @Component({
   selector: 'app-root',
@@ -25,8 +26,9 @@ export class AppComponent implements AfterViewInit {
   ngAfterViewInit(): void {
   }
 
-  constructor(private bridgeService: BridgeService) {
+  constructor(private bridgeService: BridgeService, private progressService: ProgressService) {
     this.bridgeService.error.subscribe(msg => {
+      this.progressService.clearProgress();
       alert(msg);
     });
   }
