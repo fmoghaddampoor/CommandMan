@@ -5,16 +5,6 @@
       <span class="logo-icon">⚡</span>
       <span class="logo-text">CommandMan</span>
     </div>
-    <div class="header-actions">
-      <div class="header-btn" title="Copy (F5)" (click)="copySelectedItems()">📋 Copy</div>
-      <div class="header-btn" title="Move (F6)" (click)="moveSelectedItems()">✂️ Move</div>
-      <div class="header-btn" title="Delete (F8)" (click)="deleteSelectedItems()">🗑️
-        Delete
-      </div>
-      <div class="header-btn" title="New Folder (F7)" (click)="showNewFolder = true">📁
-        New
-        Folder</div>
-    </div>
   </header>
 
   <!-- Dual Pane Container -->
@@ -33,15 +23,18 @@
   <!-- Footer / Function Keys -->
   <footer class="app-footer">
     <div class="fn-key" (click)="showAbout = true" style="cursor: pointer;"><span class="key">F1</span> Help</div>
-    <div class="fn-key"><span class="key">F3</span> View</div>
-    <div class="fn-key"><span class="key">F4</span> Edit</div>
+    <div class="fn-key" (click)="viewItem()" style="cursor: pointer;"><span class="key">F3</span> View</div>
+    <div class="fn-key" (click)="editItem()" style="cursor: pointer;"><span class="key">F4</span> Edit</div>
     <div class="fn-key" (click)="copySelectedItems()" style="cursor: pointer;"><span class="key">F5</span> Copy</div>
     <div class="fn-key" (click)="moveSelectedItems()" style="cursor: pointer;"><span class="key">F6</span> Move</div>
+    <div class="fn-key" (click)="onRenameCurrentItem()" style="cursor: pointer;"><span class="key">Alt+F6</span> Rename
+    </div>
     <div class="fn-key" (click)="showNewFolder = true" style="cursor: pointer;"><span class="key">F7</span> NewFolder
     </div>
     <div class="fn-key" (click)="deleteSelectedItems()" style="cursor: pointer;"><span class="key">F8</span> Delete
     </div>
-    <div class="fn-key"><span class="key">Tab</span> Switch Pane</div>
+    <div class="fn-key" (click)="toggleActivePane()" style="cursor: pointer;"><span class="key">Tab</span> Switch Pane
+    </div>
   </footer>
 
   <app-about-dialog *ngIf="showAbout" (closed)="showAbout = false"></app-about-dialog>

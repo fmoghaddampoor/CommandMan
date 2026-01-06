@@ -125,6 +125,15 @@
     background: rgba(137, 180, 250, 0.2);
   }
 
+  &.marked {
+    color: #fab387;
+    background: rgba(250, 179, 135, 0.1);
+
+    .col-name {
+      font-weight: bold;
+    }
+  }
+
   &.directory .col-name {
     color: #89dceb;
     font-weight: 500;
@@ -160,9 +169,16 @@
 }
 
 .status-bar {
+  display: flex;
+  justify-content: space-between;
   padding: 6px 12px;
   background: #181825;
   border-top: 1px solid #313244;
   color: #6c7086;
   font-size: 11px;
+
+  .selection-info {
+    color: #fab387;
+    font-weight: bold;
+  }
 }

@@ -129,6 +129,12 @@ export class BridgeService {
           this.getDirectoryContents(appState.RightPath, 'right');
         }
         break;
+
+      case 'refreshPane':
+        if (response.CurrentPath && response.PaneId) {
+          this.getDirectoryContents(response.CurrentPath, response.PaneId as 'left' | 'right');
+        }
+        break;
     }
   }
 
@@ -154,8 +160,8 @@ export class BridgeService {
     this.postMessage({ Action: 'openPath', Path: path });
   }
 
-  deleteItem(path: string, paneId: 'left' | 'right'): void {
-    this.postMessage({ Action: 'deleteItem', Path: path, PaneId: paneId });
+  deleteItems(items: string[], paneId: 'left' | 'right'): void {
+    this.postMessage({ Action: 'deleteItems', Items: items, PaneId: paneId });
   }
 
   renameItem(oldPath: string, newName: string, paneId: 'left' | 'right'): void {

@@ -19,6 +19,8 @@ public partial class MainWindow : Window
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
+    private readonly Dictionary<string, FileSystemWatcher> _watchers = new();
+
     public MainWindow()
     {
         InitializeComponent();
@@ -31,6 +33,16 @@ public partial class MainWindow : Window
 
         // Set up message handler from JavaScript
         webView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
+
+        // Clean up watchers on close
+        this.Closed += (s, e) => {
+            foreach (var watcher in _watchers.Values)
+            {
+                watcher.EnableRaisingEvents = false;
+                watcher.Dispose();
+            }
+            _watchers.Clear();
+        };
 
         // Navigate to the Angular app (development server or built files)
         var angularPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "index.html");
@@ -88,8 +100,9 @@ public partial class MainWindow : Window
                 case "openPath":
                     HandleOpenPath(request.Path);
                     break;
-                case "deleteItem":
-                    HandleDeleteItem(request.Path, request.PaneId);
+                case "deleteItems":
+                    if (request.Items != null)
+                        _ = HandleDeleteItems(request.Items, request.PaneId);
                     break;
                 case "renameItem":
                     HandleRenameItem(request.Path, request.Name, request.PaneId);
@@ -147,27 +160,52 @@ public partial class MainWindow : Window
         }
     }
 
-    private void HandleDeleteItem(string? path, string? paneId)
+    private async Task HandleDeleteItems(List<string> items, string? paneId)
     {
-        if (string.IsNullOrEmpty(path)) return;
+        if (items == null || items.Count == 0) return;
+        
         try
         {
-            if (Directory.Exists(path))
+            var totalCount = items.Count;
+            for (int i = 0; i < totalCount; i++)
             {
-                Directory.Delete(path, true);
+                var path = items[i];
+                var fileName = Path.GetFileName(path);
+                
+                int progress = (int)((double)i / totalCount * 100);
+                if (SignalRServer.HubContext != null)
+                    await SignalRServer.HubContext.Clients.All.SendAsync("ReceiveProgress", $"Deleting {fileName}...", progress);
+
+                if (Directory.Exists(path))
+                {
+                    await Task.Run(() => Directory.Delete(path, true));
+                }
+                else if (File.Exists(path))
+                {
+                    await Task.Run(() => File.Delete(path));
+                }
             }
-            else if (File.Exists(path))
-            {
-                File.Delete(path);
-            }
+
+            if (SignalRServer.HubContext != null)
+                await SignalRServer.HubContext.Clients.All.SendAsync("ReceiveProgress", "Complete", 100);
+            
+            await Task.Delay(300);
             
             // Refresh the pane
-            var parentPath = Path.GetDirectoryName(path);
-            HandleGetDirectoryContents(parentPath, paneId);
+            if (items.Count > 0)
+            {
+                var parentPath = Path.GetDirectoryName(items[0]);
+                HandleGetDirectoryContents(parentPath, paneId);
+            }
         }
         catch (Exception ex)
         {
-            SendErrorToWebView($"Failed to delete item: {ex.Message}");
+            SendErrorToWebView($"Failed to delete items: {ex.Message}");
+        }
+        finally
+        {
+            if (SignalRServer.HubContext != null)
+                await SignalRServer.HubContext.Clients.All.SendAsync("ReceiveProgress", null, 0);
         }
     }
 
@@ -311,6 +349,53 @@ public partial class MainWindow : Window
         }
     }
 
+    private void UpdateWatcher(string path, string? paneId)
+    {
+        if (string.IsNullOrEmpty(paneId) || !Directory.Exists(path)) return;
+
+        if (_watchers.TryGetValue(paneId, out var oldWatcher))
+        {
+            oldWatcher.EnableRaisingEvents = false;
+            oldWatcher.Dispose();
+            _watchers.Remove(paneId);
+        }
+
+        try
+        {
+            var watcher = new FileSystemWatcher(path)
+            {
+                NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastWrite,
+                Filter = "*.*",
+                EnableRaisingEvents = true
+            };
+
+            watcher.Created += (s, e) => OnFileSystemChanged(paneId, path);
+            watcher.Deleted += (s, e) => OnFileSystemChanged(paneId, path);
+            watcher.Renamed += (s, e) => OnFileSystemChanged(paneId, path);
+            watcher.Changed += (s, e) => OnFileSystemChanged(paneId, path);
+
+            _watchers[paneId] = watcher;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error setting up watcher: {ex.Message}");
+        }
+    }
+
+    private void OnFileSystemChanged(string paneId, string path)
+    {
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            var response = new BridgeResponse
+            {
+                Action = "refreshPane",
+                PaneId = paneId,
+                CurrentPath = path
+            };
+            SendMessageToWebView(response);
+        });
+    }
+
     private void HandleGetAppInfo()
     {
         var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0";
@@ -325,6 +410,9 @@ public partial class MainWindow : Window
     private void HandleGetDirectoryContents(string? path, string? paneId, string? focusItem = null)
     {
         if (string.IsNullOrEmpty(path)) return;
+
+        // Update real-time watcher
+        UpdateWatcher(path, paneId);
 
         try
         {

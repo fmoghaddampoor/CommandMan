@@ -23,6 +23,7 @@ export class FilePaneComponent implements OnInit, OnDestroy {
     currentPath = '';
     drives: DriveItem[] = [];
     selectedIndex = 0;
+    markedIndexes = new Set<number>();
 
     private destroy$ = new Subject<void>();
 
@@ -41,6 +42,7 @@ export class FilePaneComponent implements OnInit, OnDestroy {
                 this.items = state.items;
                 this.currentPath = state.currentPath;
                 this.selectedIndex = 0;
+                this.markedIndexes.clear();
 
                 // Save state if path changed and we have a path
                 if (this.currentPath && this.currentPath !== prevPath) {
@@ -115,23 +117,29 @@ export class FilePaneComponent implements OnInit, OnDestroy {
                     this.selectedIndex++;
                 }
                 break;
-            case 'Enter':
-                event.preventDefault();
-                if (item?.Name === '..') {
-                    this.bridgeService.getDirectoryContents(item.Path, this.paneId);
-                } else if (item?.IsDirectory) {
-                    this.bridgeService.getDirectoryContents(item.Path, this.paneId);
-                } else if (item) {
-                    this.bridgeService.openPath(item.Path);
-                }
                 break;
-            case 'F8':
-            case 'Delete':
+            case ' ':
+            case 'Insert':
                 event.preventDefault();
                 if (item && item.Name !== '..') {
-                    if (confirm(`Are you sure you want to delete ${item.Name}?`)) {
-                        this.bridgeService.deleteItem(item.Path, this.paneId);
+                    this.toggleMark(this.selectedIndex);
+                    if (this.selectedIndex < this.items.length - 1) {
+                        this.selectedIndex++;
                     }
+                }
+                break;
+            case 'a':
+                if (event.ctrlKey) {
+                    event.preventDefault();
+                    this.items.forEach((item, index) => {
+                        if (item.Name !== '..') this.markedIndexes.add(index);
+                    });
+                }
+                break;
+            case 'd':
+                if (event.ctrlKey) {
+                    event.preventDefault();
+                    this.markedIndexes.clear();
                 }
                 break;
             case 'F6':
@@ -145,6 +153,14 @@ export class FilePaneComponent implements OnInit, OnDestroy {
         }
     }
 
+    private toggleMark(index: number): void {
+        if (this.markedIndexes.has(index)) {
+            this.markedIndexes.delete(index);
+        } else {
+            this.markedIndexes.add(index);
+        }
+    }
+
     private requestRename(item: FileSystemItem): void {
         // We'll emit an event to AppComponent to show the rename dialog
         // or just handle it here if we bring InputDialog in.
@@ -154,11 +170,23 @@ export class FilePaneComponent implements OnInit, OnDestroy {
     }
 
     getSelectedItems(): FileSystemItem[] {
+        if (this.markedIndexes.size > 0) {
+            return Array.from(this.markedIndexes).map(idx => this.items[idx]);
+        }
+
         if (this.selectedIndex >= 0 && this.selectedIndex < this.items.length) {
             const item = this.items[this.selectedIndex];
             return item.Name !== '..' ? [item] : [];
         }
         return [];
+    }
+
+    getSelectionStats(): { count: number, size: number } {
+        const selected = this.getSelectedItems();
+        return {
+            count: selected.length,
+            size: selected.reduce((sum, item) => sum + (item.Size || 0), 0)
+        };
     }
 
     formatSize(bytes: number): string {

@@ -37,6 +37,10 @@ export class AppComponent implements AfterViewInit {
     this.activePane = pane;
   }
 
+  toggleActivePane(): void {
+    this.activePane = this.activePane === 'left' ? 'right' : 'left';
+  }
+
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     // Only handle global shortcuts if no dialog is open or if it's Escape
@@ -85,6 +89,38 @@ export class AppComponent implements AfterViewInit {
       this.bridgeService.createDirectory(currentPath, name, this.activePane);
       this.showNewFolder = false;
     }
+  }
+
+  onRenameCurrentItem(): void {
+    const activePaneInstance = this.getActivePaneInstance();
+    if (activePaneInstance) {
+      const items = activePaneInstance.getSelectedItems();
+      if (items.length > 0) {
+        this.onRenameRequested(items[0]);
+      }
+    }
+  }
+
+  viewItem(): void {
+    const activePaneInstance = this.getActivePaneInstance();
+    const items = activePaneInstance?.getSelectedItems();
+    if (items && items.length > 0) {
+      this.bridgeService.openPath(items[0].Path);
+    }
+  }
+
+  editItem(): void {
+    const activePaneInstance = this.getActivePaneInstance();
+    const items = activePaneInstance?.getSelectedItems();
+    if (items && items.length > 0) {
+      // In a real commander, F4 might open a specific editor.
+      // For now, we'll use openPath which uses OS default.
+      this.bridgeService.openPath(items[0].Path);
+    }
+  }
+
+  private getActivePaneInstance(): FilePaneComponent | null {
+    return this.activePane === 'left' ? this.leftPane : this.rightPane;
   }
 
   onRenameRequested(item: any): void {
@@ -145,9 +181,7 @@ export class AppComponent implements AfterViewInit {
     }
 
     if (confirm(`Delete ${items.length} item(s)?`)) {
-      items.forEach(item => {
-        this.bridgeService.deleteItem(item.Path, this.activePane);
-      });
+      this.bridgeService.deleteItems(items.map(i => i.Path), this.activePane);
     }
   }
 }
