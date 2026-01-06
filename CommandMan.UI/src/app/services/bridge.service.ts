@@ -143,6 +143,14 @@ export class BridgeService {
     this.postMessage({ Action: 'getAppInfo' });
   }
 
+  createDirectory(path: string, name: string, paneId: 'left' | 'right'): void {
+    this.postMessage({ Action: 'createDirectory', Path: path, Name: name, PaneId: paneId });
+  }
+
+  getCurrentPath(paneId: 'left' | 'right'): string {
+    return paneId === 'left' ? this.leftPane$.value.currentPath : this.rightPane$.value.currentPath;
+  }
+
   saveState(leftPath: string, rightPath: string): void {
     this.postMessage({
       Action: 'saveState',

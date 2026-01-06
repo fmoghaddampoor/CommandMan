@@ -9,7 +9,7 @@
       <button class="header-btn" title="Copy (F5)">📋 Copy</button>
       <button class="header-btn" title="Move (F6)">✂️ Move</button>
       <button class="header-btn" title="Delete (F8)">🗑️ Delete</button>
-      <button class="header-btn" title="New Folder (F7)">📁 New Folder</button>
+      <button class="header-btn" title="New Folder (F7)" (click)="showNewFolder = true">📁 New Folder</button>
     </div>
   </header>
 
@@ -31,10 +31,14 @@
     <div class="fn-key"><span class="key">F4</span> Edit</div>
     <div class="fn-key"><span class="key">F5</span> Copy</div>
     <div class="fn-key"><span class="key">F6</span> Move</div>
-    <div class="fn-key"><span class="key">F7</span> NewFolder</div>
+    <div class="fn-key" (click)="showNewFolder = true" style="cursor: pointer;"><span class="key">F7</span> NewFolder
+    </div>
     <div class="fn-key"><span class="key">F8</span> Delete</div>
     <div class="fn-key"><span class="key">Tab</span> Switch Pane</div>
   </footer>
 
   <app-about-dialog *ngIf="showAbout" (closed)="showAbout = false"></app-about-dialog>
+  <app-input-dialog *ngIf="showNewFolder" title="New Folder" prompt="Enter folder name:"
+    (submitted)="createFolder($event)" (closed)="showNewFolder = false">
+  </app-input-dialog>
 </div>

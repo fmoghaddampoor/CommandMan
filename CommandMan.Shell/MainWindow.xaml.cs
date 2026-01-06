@@ -81,12 +81,38 @@ public partial class MainWindow : Window
                 case "getState":
                     HandleGetState();
                     break;
+                case "createDirectory":
+                    HandleCreateDirectory(request.Path, request.Name, request.PaneId);
+                    break;
             }
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}");
             SendErrorToWebView(ex.Message);
+        }
+    }
+
+    private void HandleCreateDirectory(string? path, string? name, string? paneId)
+    {
+        if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(name)) return;
+
+        try
+        {
+            var fullPath = Path.Combine(path, name);
+            if (Directory.Exists(fullPath))
+            {
+                throw new Exception("Directory already exists.");
+            }
+
+            Directory.CreateDirectory(fullPath);
+            
+            // Refresh the pane
+            HandleGetDirectoryContents(path, paneId);
+        }
+        catch (Exception ex)
+        {
+            SendErrorToWebView($"Failed to create directory: {ex.Message}");
         }
     }
 
@@ -301,6 +327,9 @@ public class BridgeRequest
     
     [JsonPropertyName("Path")]
     public string? Path { get; set; }
+
+    [JsonPropertyName("Name")]
+    public string? Name { get; set; }
 
     [JsonPropertyName("PaneId")]
     public string? PaneId { get; set; }
