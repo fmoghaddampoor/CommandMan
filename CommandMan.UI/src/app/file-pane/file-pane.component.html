@@ -23,10 +23,9 @@
 
   <!-- File List with Virtual Scroll -->
   <cdk-virtual-scroll-viewport itemSize="28" class="file-list">
-    <div *cdkVirtualFor="let item of items; let i = index" class="file-item" 
-      [class.selected]="i === selectedIndex"
-      [class.marked]="markedIndexes.has(i)"
-      [class.directory]="item.IsDirectory" (click)="onItemClick(item, i)" (dblclick)="onItemDoubleClick(item)">
+    <div *cdkVirtualFor="let item of items; let i = index" class="file-item" [class.selected]="i === selectedIndex"
+      [class.marked]="markedIndexes.has(i)" [class.directory]="item.IsDirectory" (click)="onItemClick($event, i)"
+      (dblclick)="onItemDoubleClick(item)">
       <span class="col-icon">{{ getFileIcon(item) }}</span>
       <span class="col-name" [title]="item.Name">{{ item.Name }}</span>
       <span class="col-size">{{ item.IsDirectory ? '&lt;DIR&gt;' : formatSize(item.Size) }}</span>

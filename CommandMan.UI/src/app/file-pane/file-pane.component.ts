@@ -89,9 +89,29 @@ export class FilePaneComponent implements OnInit, OnDestroy {
         this.bridgeService.getDirectoryContents(path, this.paneId);
     }
 
-    onItemClick(item: FileSystemItem, index: number): void {
-        this.selectedIndex = index;
+    onItemClick(event: MouseEvent, index: number): void {
         this.activated.emit(this.paneId);
+
+        if (event.ctrlKey) {
+            this.toggleMark(index);
+            this.selectedIndex = index;
+        } else if (event.shiftKey) {
+            this.selectRange(this.selectedIndex, index);
+        } else {
+            this.markedIndexes.clear();
+            this.selectedIndex = index;
+        }
+    }
+
+    private selectRange(start: number, end: number): void {
+        this.markedIndexes.clear();
+        const min = Math.min(start, end);
+        const max = Math.max(start, end);
+        for (let i = min; i <= max; i++) {
+            if (this.items[i].Name !== '..') {
+                this.markedIndexes.add(i);
+            }
+        }
     }
 
     onItemDoubleClick(item: FileSystemItem): void {

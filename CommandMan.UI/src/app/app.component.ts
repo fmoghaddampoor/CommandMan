@@ -113,9 +113,7 @@ export class AppComponent implements AfterViewInit {
     const activePaneInstance = this.getActivePaneInstance();
     const items = activePaneInstance?.getSelectedItems();
     if (items && items.length > 0) {
-      // In a real commander, F4 might open a specific editor.
-      // For now, we'll use openPath which uses OS default.
-      this.bridgeService.openPath(items[0].Path);
+      this.bridgeService.editFile(items[0].Path);
     }
   }
 

@@ -160,6 +160,10 @@ export class BridgeService {
     this.postMessage({ Action: 'openPath', Path: path });
   }
 
+  editFile(path: string): void {
+    this.postMessage({ Action: 'editFile', Path: path });
+  }
+
   deleteItems(items: string[], paneId: 'left' | 'right'): void {
     this.postMessage({ Action: 'deleteItems', Items: items, PaneId: paneId });
   }

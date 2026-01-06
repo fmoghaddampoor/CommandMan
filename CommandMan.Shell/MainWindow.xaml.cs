@@ -115,6 +115,9 @@ public partial class MainWindow : Window
                     if (request.Items != null && request.TargetPath != null)
                         _ = HandleMoveItems(request.Items, request.TargetPath, request.PaneId);
                     break;
+                case "editFile":
+                    HandleEditFile(request.Path);
+                    break;
             }
         }
         catch (Exception ex)
@@ -157,6 +160,37 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             SendErrorToWebView($"Failed to open path: {ex.Message}");
+        }
+    }
+
+    private void HandleEditFile(string? path)
+    {
+        if (string.IsNullOrEmpty(path)) return;
+        try
+        {
+            string editorPath = "notepad.exe";
+            
+            // Try Notepad++ common paths
+            var nppPaths = new[]
+            {
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Notepad++", "notepad++.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Notepad++", "notepad++.exe")
+            };
+
+            foreach (var nppPath in nppPaths)
+            {
+                if (File.Exists(nppPath))
+                {
+                    editorPath = nppPath;
+                    break;
+                }
+            }
+
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(editorPath, $"\"{path}\"") { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            SendErrorToWebView($"Failed to edit file: {ex.Message}");
         }
     }
 
