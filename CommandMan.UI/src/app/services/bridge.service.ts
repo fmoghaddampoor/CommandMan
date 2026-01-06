@@ -25,11 +25,13 @@ export interface BridgeResponse {
   Error?: string;
   Drives?: DriveItem[];
   PaneId?: string;
+  FocusItem?: string;
 }
 
 export interface PaneState {
   items: FileSystemItem[];
   currentPath: string;
+  focusItem?: string;
 }
 
 @Injectable({
@@ -91,7 +93,8 @@ export class BridgeService {
       case 'directoryContents':
         const state: PaneState = {
           items: (response.Data as FileSystemItem[]) || [],
-          currentPath: response.CurrentPath || ''
+          currentPath: response.CurrentPath || '',
+          focusItem: response.FocusItem
         };
 
         // Use the returned PaneId to route the response, falling back to pendingPaneId if not present (backward compatibility/mock)

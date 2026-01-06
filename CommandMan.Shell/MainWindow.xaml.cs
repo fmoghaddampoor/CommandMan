@@ -108,13 +108,14 @@ public partial class MainWindow : Window
             Directory.CreateDirectory(fullPath);
             
             // Refresh the pane
-            HandleGetDirectoryContents(path, paneId);
+            HandleGetDirectoryContents(path, paneId, name);
         }
         catch (Exception ex)
         {
             SendErrorToWebView($"Failed to create directory: {ex.Message}");
         }
     }
+
 
     private void HandleGetAppInfo()
     {
@@ -127,7 +128,7 @@ public partial class MainWindow : Window
         SendMessageToWebView(response);
     }
 
-    private void HandleGetDirectoryContents(string? path, string? paneId)
+    private void HandleGetDirectoryContents(string? path, string? paneId, string? focusItem = null)
     {
         if (string.IsNullOrEmpty(path)) return;
 
@@ -191,7 +192,8 @@ public partial class MainWindow : Window
                 Action = "directoryContents",
                 Data = items,
                 CurrentPath = path,
-                PaneId = paneId
+                PaneId = paneId,
+                FocusItem = focusItem
             };
 
             SendMessageToWebView(response);
@@ -366,6 +368,9 @@ public class BridgeResponse
 
     [JsonPropertyName("PaneId")]
     public string? PaneId { get; set; }
+
+    [JsonPropertyName("FocusItem")]
+    public string? FocusItem { get; set; }
 }
 
 public class FileSystemItem

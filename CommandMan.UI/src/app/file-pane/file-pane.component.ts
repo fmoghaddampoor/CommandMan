@@ -1,6 +1,6 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ScrollingModule } from '@angular/cdk/scrolling';
+import { ScrollingModule, CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { BridgeService, FileSystemItem, DriveItem } from '../services/bridge.service';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -12,6 +12,7 @@ import { Subject, takeUntil } from 'rxjs';
     styleUrls: ['./file-pane.component.scss']
 })
 export class FilePaneComponent implements OnInit, OnDestroy {
+    @ViewChild(CdkVirtualScrollViewport) viewport!: CdkVirtualScrollViewport;
     @Input() paneId: 'left' | 'right' = 'left';
     @Input() isActive = false;
     @Output() activated = new EventEmitter<'left' | 'right'>();
@@ -42,6 +43,19 @@ export class FilePaneComponent implements OnInit, OnDestroy {
                 // Save state if path changed and we have a path
                 if (this.currentPath && this.currentPath !== prevPath) {
                     this.saveCurrentState();
+                }
+
+                // Handle focus/selection
+                if (state.focusItem) {
+                    const focusIndex = this.items.findIndex(i => i.Name === state.focusItem);
+                    if (focusIndex !== -1) {
+                        this.selectedIndex = focusIndex;
+                        setTimeout(() => {
+                            if (this.viewport) {
+                                this.viewport.scrollToIndex(focusIndex);
+                            }
+                        });
+                    }
                 }
             });
 
