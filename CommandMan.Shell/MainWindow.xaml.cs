@@ -253,6 +253,13 @@ public partial class MainWindow : Window
             {
                 var json = File.ReadAllText(ConfigPath);
                 state = JsonSerializer.Deserialize<AppState>(json, JsonOptions) ?? CreateDefaultState();
+                
+                // Validate paths
+                var defaultConfig = CreateDefaultState();
+                if (string.IsNullOrEmpty(state.LeftPath) || !Directory.Exists(state.LeftPath))
+                    state.LeftPath = defaultConfig.LeftPath;
+                if (string.IsNullOrEmpty(state.RightPath) || !Directory.Exists(state.RightPath))
+                    state.RightPath = defaultConfig.RightPath;
             }
             else
             {
