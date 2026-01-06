@@ -67,7 +67,7 @@ public partial class MainWindow : Window
             switch (request.Action)
             {
                 case "getDirectoryContents":
-                    HandleGetDirectoryContents(request.Path);
+                    HandleGetDirectoryContents(request.Path, request.PaneId);
                     break;
                 case "getDrives":
                     HandleGetDrives();
@@ -101,7 +101,7 @@ public partial class MainWindow : Window
         SendMessageToWebView(response);
     }
 
-    private void HandleGetDirectoryContents(string? path)
+    private void HandleGetDirectoryContents(string? path, string? paneId)
     {
         if (string.IsNullOrEmpty(path)) return;
 
@@ -164,7 +164,8 @@ public partial class MainWindow : Window
             {
                 Action = "directoryContents",
                 Data = items,
-                CurrentPath = path
+                CurrentPath = path,
+                PaneId = paneId
             };
 
             SendMessageToWebView(response);
@@ -300,6 +301,9 @@ public class BridgeRequest
     
     [JsonPropertyName("Path")]
     public string? Path { get; set; }
+
+    [JsonPropertyName("PaneId")]
+    public string? PaneId { get; set; }
 
     [JsonPropertyName("State")]
     public AppState? State { get; set; }

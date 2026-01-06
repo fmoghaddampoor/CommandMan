@@ -93,9 +93,12 @@ export class BridgeService {
           currentPath: response.CurrentPath || ''
         };
 
-        if (this.pendingPaneId === 'left') {
+        // Use the returned PaneId to route the response, falling back to pendingPaneId if not present (backward compatibility/mock)
+        const targetPane = response.PaneId || this.pendingPaneId;
+
+        if (targetPane === 'left') {
           this.leftPane$.next(state);
-        } else {
+        } else if (targetPane === 'right') {
           this.rightPane$.next(state);
         }
         break;
@@ -126,8 +129,9 @@ export class BridgeService {
   }
 
   getDirectoryContents(path: string, paneId: 'left' | 'right'): void {
+    // We still set pendingPaneId for backward compatibility or mock data
     this.pendingPaneId = paneId;
-    this.postMessage({ Action: 'getDirectoryContents', Path: path });
+    this.postMessage({ Action: 'getDirectoryContents', Path: path, PaneId: paneId });
   }
 
   getDrives(): void {
