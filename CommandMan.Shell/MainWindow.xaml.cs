@@ -230,15 +230,18 @@ public partial class MainWindow : Window
                 await SignalRServer.HubContext.Clients.All.SendAsync("ReceiveProgress", "Complete", 100);
             
             await Task.Delay(500); // Small delay to show completion
+        }
+        catch (Exception ex)
+        {
+            SendErrorToWebView($"Copy failed: {ex.Message}");
+        }
+        finally
+        {
             if (SignalRServer.HubContext != null)
                 await SignalRServer.HubContext.Clients.All.SendAsync("ReceiveProgress", null, 0);
 
             // Refresh target pane
             HandleGetDirectoryContents(targetPath, paneId == "left" ? "right" : "left");
-        }
-        catch (Exception ex)
-        {
-            SendErrorToWebView($"Copy failed: {ex.Message}");
         }
     }
 
@@ -259,6 +262,10 @@ public partial class MainWindow : Window
 
                 if (Directory.Exists(item))
                 {
+                    if (Directory.Exists(destPath))
+                    {
+                        throw new IOException($"Target directory already exists: {destPath}");
+                    }
                     await Task.Run(() => Directory.Move(item, destPath));
                 }
                 else
@@ -271,17 +278,23 @@ public partial class MainWindow : Window
                 await SignalRServer.HubContext.Clients.All.SendAsync("ReceiveProgress", "Complete", 100);
             
             await Task.Delay(500);
+        }
+        catch (Exception ex)
+        {
+            SendErrorToWebView($"Move failed: {ex.Message}");
+        }
+        finally
+        {
             if (SignalRServer.HubContext != null)
                 await SignalRServer.HubContext.Clients.All.SendAsync("ReceiveProgress", null, 0);
 
             // Refresh both panes
             HandleGetDirectoryContents(targetPath, paneId == "left" ? "right" : "left");
-            var sourcePath = Path.GetDirectoryName(items[0]);
-            HandleGetDirectoryContents(sourcePath, paneId);
-        }
-        catch (Exception ex)
-        {
-            SendErrorToWebView($"Move failed: {ex.Message}");
+            if (items.Count > 0)
+            {
+                var sourcePath = Path.GetDirectoryName(items[0]);
+                HandleGetDirectoryContents(sourcePath, paneId);
+            }
         }
     }
 

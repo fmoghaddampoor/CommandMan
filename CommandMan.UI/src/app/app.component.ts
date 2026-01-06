@@ -25,7 +25,11 @@ export class AppComponent implements AfterViewInit {
   ngAfterViewInit(): void {
   }
 
-  constructor(private bridgeService: BridgeService) { }
+  constructor(private bridgeService: BridgeService) {
+    this.bridgeService.error.subscribe(msg => {
+      alert(msg);
+    });
+  }
 
   onPaneActivated(pane: 'left' | 'right'): void {
     this.activePane = pane;
