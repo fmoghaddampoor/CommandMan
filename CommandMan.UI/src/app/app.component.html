@@ -15,12 +15,14 @@
 
   <!-- Dual Pane Container -->
   <main class="panes-container">
-    <app-file-pane paneId="left" [isActive]="activePane === 'left'" (activated)="onPaneActivated($event)">
+    <app-file-pane paneId="left" [isActive]="activePane === 'left'" (activated)="onPaneActivated($event)"
+      (renameRequested)="onRenameRequested($event)">
     </app-file-pane>
 
     <div class="pane-divider"></div>
 
-    <app-file-pane paneId="right" [isActive]="activePane === 'right'" (activated)="onPaneActivated($event)">
+    <app-file-pane paneId="right" [isActive]="activePane === 'right'" (activated)="onPaneActivated($event)"
+      (renameRequested)="onRenameRequested($event)">
     </app-file-pane>
   </main>
 
@@ -40,5 +42,9 @@
   <app-about-dialog *ngIf="showAbout" (closed)="showAbout = false"></app-about-dialog>
   <app-input-dialog *ngIf="showNewFolder" title="New Folder" prompt="Enter folder name:"
     (submitted)="createFolder($event)" (closed)="showNewFolder = false">
+  </app-input-dialog>
+
+  <app-input-dialog *ngIf="itemToRename" title="Rename" [initialValue]="itemToRename.Name" prompt="Enter new name:"
+    (submitted)="renameItem($event)" (closed)="itemToRename = null">
   </app-input-dialog>
 </div>

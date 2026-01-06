@@ -150,6 +150,18 @@ export class BridgeService {
     this.postMessage({ Action: 'createDirectory', Path: path, Name: name, PaneId: paneId });
   }
 
+  openPath(path: string): void {
+    this.postMessage({ Action: 'openPath', Path: path });
+  }
+
+  deleteItem(path: string, paneId: 'left' | 'right'): void {
+    this.postMessage({ Action: 'deleteItem', Path: path, PaneId: paneId });
+  }
+
+  renameItem(oldPath: string, newName: string, paneId: 'left' | 'right'): void {
+    this.postMessage({ Action: 'renameItem', Path: oldPath, Name: newName, PaneId: paneId });
+  }
+
   getCurrentPath(paneId: 'left' | 'right'): string {
     return paneId === 'left' ? this.leftPane$.value.currentPath : this.rightPane$.value.currentPath;
   }

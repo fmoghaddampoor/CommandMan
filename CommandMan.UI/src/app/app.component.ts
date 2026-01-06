@@ -16,6 +16,7 @@ export class AppComponent {
   activePane: 'left' | 'right' = 'left';
   showAbout = false;
   showNewFolder = false;
+  itemToRename: any = null;
 
   constructor(private bridgeService: BridgeService) { }
 
@@ -49,6 +50,17 @@ export class AppComponent {
     if (currentPath) {
       this.bridgeService.createDirectory(currentPath, name, this.activePane);
       this.showNewFolder = false;
+    }
+  }
+
+  onRenameRequested(item: any): void {
+    this.itemToRename = item;
+  }
+
+  renameItem(newName: string): void {
+    if (this.itemToRename) {
+      this.bridgeService.renameItem(this.itemToRename.Path, newName, this.activePane);
+      this.itemToRename = null;
     }
   }
 }

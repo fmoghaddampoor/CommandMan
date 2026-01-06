@@ -84,6 +84,15 @@ public partial class MainWindow : Window
                 case "createDirectory":
                     HandleCreateDirectory(request.Path, request.Name, request.PaneId);
                     break;
+                case "openPath":
+                    HandleOpenPath(request.Path);
+                    break;
+                case "deleteItem":
+                    HandleDeleteItem(request.Path, request.PaneId);
+                    break;
+                case "renameItem":
+                    HandleRenameItem(request.Path, request.Name, request.PaneId);
+                    break;
             }
         }
         catch (Exception ex)
@@ -113,6 +122,71 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             SendErrorToWebView($"Failed to create directory: {ex.Message}");
+        }
+    }
+
+    private void HandleOpenPath(string? path)
+    {
+        if (string.IsNullOrEmpty(path)) return;
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            SendErrorToWebView($"Failed to open path: {ex.Message}");
+        }
+    }
+
+    private void HandleDeleteItem(string? path, string? paneId)
+    {
+        if (string.IsNullOrEmpty(path)) return;
+        try
+        {
+            if (Directory.Exists(path))
+            {
+                Directory.Delete(path, true);
+            }
+            else if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+            
+            // Refresh the pane
+            var parentPath = Path.GetDirectoryName(path);
+            HandleGetDirectoryContents(parentPath, paneId);
+        }
+        catch (Exception ex)
+        {
+            SendErrorToWebView($"Failed to delete item: {ex.Message}");
+        }
+    }
+
+    private void HandleRenameItem(string? oldPath, string? newName, string? paneId)
+    {
+        if (string.IsNullOrEmpty(oldPath) || string.IsNullOrEmpty(newName)) return;
+        try
+        {
+            var parentDir = Path.GetDirectoryName(oldPath);
+            if (parentDir == null) return;
+            
+            var newPath = Path.Combine(parentDir, newName);
+            
+            if (Directory.Exists(oldPath))
+            {
+                Directory.Move(oldPath, newPath);
+            }
+            else if (File.Exists(oldPath))
+            {
+                File.Move(oldPath, newPath);
+            }
+
+            // Refresh the pane and focus the new name
+            HandleGetDirectoryContents(parentDir, paneId, newName);
+        }
+        catch (Exception ex)
+        {
+            SendErrorToWebView($"Failed to rename item: {ex.Message}");
         }
     }
 

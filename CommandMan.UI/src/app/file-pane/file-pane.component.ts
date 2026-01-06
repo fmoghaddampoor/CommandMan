@@ -17,6 +17,7 @@ export class FilePaneComponent implements OnInit, OnDestroy {
     @Input() paneId: 'left' | 'right' = 'left';
     @Input() isActive = false;
     @Output() activated = new EventEmitter<'left' | 'right'>();
+    @Output() renameRequested = new EventEmitter<FileSystemItem>();
 
     items: FileSystemItem[] = [];
     currentPath = '';
@@ -94,10 +95,13 @@ export class FilePaneComponent implements OnInit, OnDestroy {
     onItemDoubleClick(item: FileSystemItem): void {
         if (item.IsDirectory) {
             this.bridgeService.getDirectoryContents(item.Path, this.paneId);
+        } else {
+            this.bridgeService.openPath(item.Path);
         }
     }
 
     onKeyDown(event: KeyboardEvent): void {
+        const item = this.items[this.selectedIndex];
         switch (event.key) {
             case 'ArrowUp':
                 event.preventDefault();
@@ -113,12 +117,40 @@ export class FilePaneComponent implements OnInit, OnDestroy {
                 break;
             case 'Enter':
                 event.preventDefault();
-                const item = this.items[this.selectedIndex];
-                if (item?.IsDirectory) {
+                if (item?.Name === '..') {
                     this.bridgeService.getDirectoryContents(item.Path, this.paneId);
+                } else if (item?.IsDirectory) {
+                    this.bridgeService.getDirectoryContents(item.Path, this.paneId);
+                } else if (item) {
+                    this.bridgeService.openPath(item.Path);
+                }
+                break;
+            case 'F8':
+            case 'Delete':
+                event.preventDefault();
+                if (item && item.Name !== '..') {
+                    if (confirm(`Are you sure you want to delete ${item.Name}?`)) {
+                        this.bridgeService.deleteItem(item.Path, this.paneId);
+                    }
+                }
+                break;
+            case 'F6':
+                if (event.shiftKey) {
+                    event.preventDefault();
+                    if (item && item.Name !== '..') {
+                        this.requestRename(item);
+                    }
                 }
                 break;
         }
+    }
+
+    private requestRename(item: FileSystemItem): void {
+        // We'll emit an event to AppComponent to show the rename dialog
+        // or just handle it here if we bring InputDialog in.
+        // For now, let's use a simple prompt or emit.
+        // I'll add an @Output for rename requested.
+        this.renameRequested.emit(item);
     }
 
     formatSize(bytes: number): string {
