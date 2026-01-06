@@ -1,0 +1,61 @@
+/* Global Styles */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: 'Segoe UI', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #11111b;
+    color: #cdd6f4;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #181825;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #45475a;
+    border-radius: 4px;
+
+    &:hover {
+        background: #585b70;
+    }
+}
+
+/* Selection */
+::selection {
+    background: rgba(137, 180, 250, 0.3);
+    color: #cdd6f4;
+}
+
+/* Focus outline */
+:focus-visible {
+    outline: 2px solid #89b4fa;
+    outline-offset: 2px;
+}
+
+/* Disable text selection for UI elements */
+button,
+.file-item,
+.header,
+.fn-key {
+    user-select: none;
+}

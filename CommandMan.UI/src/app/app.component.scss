@@ -1,0 +1,115 @@
+.commander-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: #11111b;
+    color: #cdd6f4;
+    font-family: 'Segoe UI', 'Inter', -apple-system, sans-serif;
+}
+
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    background: linear-gradient(180deg, #1e1e2e 0%, #181825 100%);
+    border-bottom: 1px solid #313244;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo-icon {
+    font-size: 24px;
+}
+
+.logo-text {
+    font-size: 18px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #89b4fa, #cba6f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.header-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #313244;
+    border: none;
+    border-radius: 6px;
+    color: #cdd6f4;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: #45475a;
+        transform: translateY(-1px);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+.panes-container {
+    display: flex;
+    flex: 1;
+    gap: 0;
+    padding: 12px;
+    overflow: hidden;
+}
+
+.pane-divider {
+    width: 8px;
+    cursor: col-resize;
+    transition: background 0.2s ease;
+
+    &:hover {
+        background: rgba(137, 180, 250, 0.2);
+    }
+}
+
+app-file-pane {
+    flex: 1;
+    min-width: 0;
+}
+
+.app-footer {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 16px;
+    background: #181825;
+    border-top: 1px solid #313244;
+}
+
+.fn-key {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: #313244;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #a6adc8;
+
+    .key {
+        padding: 2px 6px;
+        background: #45475a;
+        border-radius: 3px;
+        font-weight: 600;
+        color: #89b4fa;
+    }
+}
