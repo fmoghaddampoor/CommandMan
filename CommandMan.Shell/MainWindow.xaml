@@ -7,6 +7,7 @@
         xmlns:local="clr-namespace:CommandMan.Shell"
         mc:Ignorable="d"
         Title="CommandMan" Height="700" Width="1200"
+        Icon="Assets/icon.png"
         WindowStartupLocation="CenterScreen">
     <Grid>
         <wv2:WebView2 x:Name="webView" />

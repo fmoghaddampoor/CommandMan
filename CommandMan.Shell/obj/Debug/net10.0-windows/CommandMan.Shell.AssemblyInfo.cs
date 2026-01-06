@@ -10,10 +10,11 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("CommandMan.Shell")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("CommandMan Team")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+[assembly: System.Reflection.AssemblyDescriptionAttribute("A modern Total Commander clone built with WPF and Angular.")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9186f78b813520b881c155afa52842f94f56736e")]
 [assembly: System.Reflection.AssemblyProductAttribute("CommandMan.Shell")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CommandMan.Shell")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

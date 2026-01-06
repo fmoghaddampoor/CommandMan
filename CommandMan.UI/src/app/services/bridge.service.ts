@@ -39,6 +39,7 @@ export class BridgeService {
   private leftPane$ = new BehaviorSubject<PaneState>({ items: [], currentPath: '' });
   private rightPane$ = new BehaviorSubject<PaneState>({ items: [], currentPath: '' });
   private drives$ = new BehaviorSubject<DriveItem[]>([]);
+  private appInfo$ = new BehaviorSubject<{ Version: string, AppName: string } | null>(null);
   private error$ = new Subject<string>();
   private isWebView2 = false;
   private pendingPaneId: 'left' | 'right' = 'left';
@@ -46,6 +47,7 @@ export class BridgeService {
   readonly leftPane = this.leftPane$.asObservable();
   readonly rightPane = this.rightPane$.asObservable();
   readonly drives = this.drives$.asObservable();
+  readonly appInfo = this.appInfo$.asObservable();
   readonly error = this.error$.asObservable();
 
   constructor(private ngZone: NgZone) {
@@ -69,12 +71,14 @@ export class BridgeService {
       // Request drives after a short delay to ensure WebView2 is ready
       setTimeout(() => {
         this.getDrives();
+        this.getAppInfo();
       }, 100);
     } else {
       console.log('Not running inside WebView2 - using mock data');
       // Load mock drives for browser development
       setTimeout(() => {
         this.loadMockDrives();
+        this.appInfo$.next({ Version: '1.0.0-dev', AppName: 'CommandMan (Web)' });
       }, 100);
     }
   }
@@ -101,6 +105,10 @@ export class BridgeService {
         this.drives$.next(response.Drives || []);
         break;
 
+      case 'appInfo':
+        this.appInfo$.next(response.Data as any);
+        break;
+
       case 'error':
         console.error('Bridge error:', response.Error);
         this.error$.next(response.Error || 'Unknown error');
@@ -115,6 +123,10 @@ export class BridgeService {
 
   getDrives(): void {
     this.postMessage({ Action: 'getDrives' });
+  }
+
+  getAppInfo(): void {
+    this.postMessage({ Action: 'getAppInfo' });
   }
 
   private postMessage(message: any): void {

@@ -72,6 +72,9 @@ public partial class MainWindow : Window
                 case "getDrives":
                     HandleGetDrives();
                     break;
+                case "getAppInfo":
+                    HandleGetAppInfo();
+                    break;
             }
         }
         catch (Exception ex)
@@ -79,6 +82,17 @@ public partial class MainWindow : Window
             System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}");
             SendErrorToWebView(ex.Message);
         }
+    }
+
+    private void HandleGetAppInfo()
+    {
+        var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0";
+        var response = new BridgeResponse
+        {
+            Action = "appInfo",
+            Data = new { Version = version, AppName = "CommandMan" }
+        };
+        SendMessageToWebView(response);
     }
 
     private void HandleGetDirectoryContents(string? path)
