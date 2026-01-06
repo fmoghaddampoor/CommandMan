@@ -75,6 +75,12 @@ public partial class MainWindow : Window
                 case "getAppInfo":
                     HandleGetAppInfo();
                     break;
+                case "saveState":
+                    if (request.State != null) HandleSaveState(request.State);
+                    break;
+                case "getState":
+                    HandleGetState();
+                    break;
             }
         }
         catch (Exception ex)
@@ -218,6 +224,66 @@ public partial class MainWindow : Window
         };
         SendMessageToWebView(response);
     }
+
+    // State Persistence
+    private readonly string ConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CommandMan", "config.json");
+
+    private void HandleSaveState(AppState state)
+    {
+        try
+        {
+            var dir = Path.GetDirectoryName(ConfigPath);
+            if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+
+            var json = JsonSerializer.Serialize(state, JsonOptions);
+            File.WriteAllText(ConfigPath, json);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to save config: {ex.Message}");
+        }
+    }
+
+    private void HandleGetState()
+    {
+        try
+        {
+            AppState state;
+            if (File.Exists(ConfigPath))
+            {
+                var json = File.ReadAllText(ConfigPath);
+                state = JsonSerializer.Deserialize<AppState>(json, JsonOptions) ?? CreateDefaultState();
+            }
+            else
+            {
+                state = CreateDefaultState();
+            }
+
+            var response = new BridgeResponse
+            {
+                Action = "state",
+                Data = state
+            };
+            SendMessageToWebView(response);
+        }
+        catch
+        {
+            SendMessageToWebView(new BridgeResponse { Action = "state", Data = CreateDefaultState() });
+        }
+    }
+
+    private AppState CreateDefaultState()
+    {
+        // Find first available fixed drive
+        var drive = DriveInfo.GetDrives()
+            .FirstOrDefault(d => d.IsReady && d.DriveType == DriveType.Fixed)?.Name ?? "C:\\";
+
+        return new AppState
+        {
+            LeftPath = drive,
+            RightPath = drive
+        };
+    }
 }
 
 public class BridgeRequest
@@ -227,6 +293,18 @@ public class BridgeRequest
     
     [JsonPropertyName("Path")]
     public string? Path { get; set; }
+
+    [JsonPropertyName("State")]
+    public AppState? State { get; set; }
+}
+
+public class AppState
+{
+    [JsonPropertyName("LeftPath")]
+    public string LeftPath { get; set; } = string.Empty;
+
+    [JsonPropertyName("RightPath")]
+    public string RightPath { get; set; } = string.Empty;
 }
 
 public class BridgeResponse
@@ -245,6 +323,9 @@ public class BridgeResponse
     
     [JsonPropertyName("Drives")]
     public List<DriveItem>? Drives { get; set; }
+
+    [JsonPropertyName("PaneId")]
+    public string? PaneId { get; set; }
 }
 
 public class FileSystemItem

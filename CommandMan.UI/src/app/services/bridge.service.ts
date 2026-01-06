@@ -20,7 +20,7 @@ export interface DriveItem {
 
 export interface BridgeResponse {
   Action: string;
-  Data?: FileSystemItem[];
+  Data?: FileSystemItem[] | { LeftPath: string, RightPath: string } | { Version: string, AppName: string };
   CurrentPath?: string;
   Error?: string;
   Drives?: DriveItem[];
@@ -89,7 +89,7 @@ export class BridgeService {
     switch (response.Action) {
       case 'directoryContents':
         const state: PaneState = {
-          items: response.Data || [],
+          items: (response.Data as FileSystemItem[]) || [],
           currentPath: response.CurrentPath || ''
         };
 
@@ -106,12 +106,21 @@ export class BridgeService {
         break;
 
       case 'appInfo':
-        this.appInfo$.next(response.Data as any);
+        this.appInfo$.next(response.Data as { Version: string, AppName: string });
         break;
 
       case 'error':
         console.error('Bridge error:', response.Error);
         this.error$.next(response.Error || 'Unknown error');
+        break;
+
+      case 'state':
+        const appState = response.Data as { LeftPath: string, RightPath: string };
+        if (appState) {
+          // Initialize panes with saved state
+          this.getDirectoryContents(appState.LeftPath, 'left');
+          this.getDirectoryContents(appState.RightPath, 'right');
+        }
         break;
     }
   }
@@ -127,6 +136,28 @@ export class BridgeService {
 
   getAppInfo(): void {
     this.postMessage({ Action: 'getAppInfo' });
+  }
+
+  saveState(leftPath: string, rightPath: string): void {
+    this.postMessage({
+      Action: 'saveState',
+      State: { LeftPath: leftPath, RightPath: rightPath }
+    });
+  }
+
+  updatePanePath(paneId: 'left' | 'right', path: string): void {
+    const currentLeft = this.leftPane$.value.currentPath;
+    const currentRight = this.rightPane$.value.currentPath;
+
+    if (paneId === 'left') {
+      this.saveState(path, currentRight);
+    } else {
+      this.saveState(currentLeft, path);
+    }
+  }
+
+  getState(): void {
+    this.postMessage({ Action: 'getState' });
   }
 
   private postMessage(message: any): void {

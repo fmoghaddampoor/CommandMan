@@ -34,9 +34,15 @@ export class FilePaneComponent implements OnInit, OnDestroy {
         paneState$
             .pipe(takeUntil(this.destroy$))
             .subscribe(state => {
+                const prevPath = this.currentPath;
                 this.items = state.items;
                 this.currentPath = state.currentPath;
                 this.selectedIndex = 0;
+
+                // Save state if path changed and we have a path
+                if (this.currentPath && this.currentPath !== prevPath) {
+                    this.saveCurrentState();
+                }
             });
 
         // Drives are shared between panes
@@ -137,5 +143,9 @@ export class FilePaneComponent implements OnInit, OnDestroy {
             case '.exe': return '⚙️';
             default: return '📄';
         }
+    }
+
+    private saveCurrentState(): void {
+        this.bridgeService.updatePanePath(this.paneId, this.currentPath);
     }
 }
