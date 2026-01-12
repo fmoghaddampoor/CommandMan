@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Services Reference - CommandMan</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+            background: #f8f9fa;
+        }
+
+        h1 {
+            color: #1a5490;
+            border-bottom: 2px solid #1a5490;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #2d72b8;
+            margin-top: 30px;
+        }
+
+        h3 {
+            color: #444;
+        }
+
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: Consolas, monospace;
+        }
+
+        pre {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .component {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #1a5490;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Services Reference</h1>
+    <p><a href="index.html">← Back to Index</a></p>
+
+    <div class="component">
+        <h2>FileSystemService</h2>
+        <p>Handles all file and folder operations.</p>
+
+        <h3>Interface: IFileSystemService</h3>
+        <table>
+            <tr>
+                <th>Method</th>
+                <th>Parameters</th>
+                <th>Returns</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>GetDirectoryContents</td>
+                <td>string path</td>
+                <td>IEnumerable&lt;FileSystemItem&gt;</td>
+                <td>Lists directory contents with ".." navigation</td>
+            </tr>
+            <tr>
+                <td>CreateDirectory</td>
+                <td>string path, string name</td>
+                <td>void</td>
+                <td>Creates a new folder</td>
+            </tr>
+            <tr>
+                <td>DeleteItems</td>
+                <td>IEnumerable&lt;string&gt; items</td>
+                <td>void</td>
+                <td>Deletes files and folders recursively</td>
+            </tr>
+            <tr>
+                <td>RenameItem</td>
+                <td>string oldPath, string newName</td>
+                <td>void</td>
+                <td>Renames a file or folder</td>
+            </tr>
+            <tr>
+                <td>CopyItems</td>
+                <td>IEnumerable&lt;string&gt; items, string targetPath</td>
+                <td>void</td>
+                <td>Copies to destination</td>
+            </tr>
+            <tr>
+                <td>MoveItems</td>
+                <td>IEnumerable&lt;string&gt; items, string targetPath</td>
+                <td>void</td>
+                <td>Moves to destination</td>
+            </tr>
+            <tr>
+                <td>OpenPath</td>
+                <td>string path</td>
+                <td>void</td>
+                <td>Opens with default application</td>
+            </tr>
+            <tr>
+                <td>EditFile</td>
+                <td>string path</td>
+                <td>void</td>
+                <td>Opens in Notepad++/Notepad</td>
+            </tr>
+            <tr>
+                <td>SetWatcher</td>
+                <td>string path, string paneId</td>
+                <td>void</td>
+                <td>Sets FileSystemWatcher for auto-refresh</td>
+            </tr>
+        </table>
+
+        <h3>Events</h3>
+        <pre>
+event EventHandler&lt;FileSystemChangedEventArgs&gt; FileSystemChanged
+</pre>
+        <p>Raised when files/folders change in a watched directory.</p>
+    </div>
+
+    <div class="component">
+        <h2>DriveService</h2>
+        <p>Enumerates available drives.</p>
+
+        <h3>Interface: IDriveService</h3>
+        <table>
+            <tr>
+                <th>Method</th>
+                <th>Returns</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>GetDrives</td>
+                <td>IEnumerable&lt;DriveItem&gt;</td>
+                <td>Lists all ready drives with space info</td>
+            </tr>
+        </table>
+
+        <h3>DriveItem Properties</h3>
+        <pre>
+public class DriveItem
+{
+    string Name       // "C:\", "D:\", etc.
+    string Label      // Drive label or drive type
+    long TotalSize    // Total capacity in bytes
+    long FreeSpace    // Free space in bytes
+    string DriveType  // Fixed, Removable, Network, CDRom
+}
+</pre>
+    </div>
+
+    <div class="component">
+        <h2>ConfigService</h2>
+        <p>Persists application state between sessions.</p>
+
+        <h3>Interface: IConfigService</h3>
+        <table>
+            <tr>
+                <th>Method</th>
+                <th>Parameters</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>GetState</td>
+                <td>-</td>
+                <td>Loads saved AppState from JSON file</td>
+            </tr>
+            <tr>
+                <td>SaveState</td>
+                <td>AppState state</td>
+                <td>Saves state to JSON file</td>
+            </tr>
+        </table>
+
+        <h3>AppState</h3>
+        <pre>
+public class AppState
+{
+    string LeftPath    // Last path in left pane
+    string RightPath   // Last path in right pane
+}
+</pre>
+
+        <h3>Storage Location</h3>
+        <pre>
+%LOCALAPPDATA%\CommandMan\state.json
+</pre>
+    </div>
+
+    <div class="component">
+        <h2>ProgressService</h2>
+        <p>Reports operation progress to the UI.</p>
+
+        <h3>Interface: IProgressService</h3>
+        <table>
+            <tr>
+                <th>Property/Event</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>SendProgress</td>
+                <td>Action&lt;string, int&gt;</td>
+                <td>Callback: (message, percentage)</td>
+            </tr>
+        </table>
+
+        <h3>Usage</h3>
+        <pre>
+// In FileSystemService during copy operation
+for (int i = 0; i < files.Length; i++)
+{
+    _progressService.SendProgress?.Invoke(
+        $"Copying {files[i]}",
+        (i + 1) * 100 / files.Length
+    );
+    File.Copy(files[i], destPath);
+}
+</pre>
+    </div>
+
+    <div class="component">
+        <h2>Angular Services</h2>
+
+        <h3>BridgeService</h3>
+        <p>Central communication hub for all Shell interactions.</p>
+        <table>
+            <tr>
+                <th>Observable</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>leftPane$</td>
+                <td>BehaviorSubject&lt;PaneState&gt;</td>
+                <td>Left pane file list and path</td>
+            </tr>
+            <tr>
+                <td>rightPane$</td>
+                <td>BehaviorSubject&lt;PaneState&gt;</td>
+                <td>Right pane file list and path</td>
+            </tr>
+            <tr>
+                <td>drives$</td>
+                <td>BehaviorSubject&lt;DriveItem[]&gt;</td>
+                <td>Available drives</td>
+            </tr>
+            <tr>
+                <td>appInfo$</td>
+                <td>BehaviorSubject&lt;AppInfo&gt;</td>
+                <td>App name and version</td>
+            </tr>
+            <tr>
+                <td>error$</td>
+                <td>Subject&lt;string&gt;</td>
+                <td>Error notifications</td>
+            </tr>
+        </table>
+
+        <h3>ProgressService (Angular)</h3>
+        <table>
+            <tr>
+                <th>Observable</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>progress$</td>
+                <td>BehaviorSubject&lt;Progress&gt;</td>
+                <td>Current progress state</td>
+            </tr>
+            <tr>
+                <td>isVisible$</td>
+                <td>Observable&lt;boolean&gt;</td>
+                <td>Whether overlay is shown</td>
+            </tr>
+        </table>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Communication Bridge - CommandMan</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+            background: #f8f9fa;
+        }
+
+        h1 {
+            color: #1a5490;
+            border-bottom: 2px solid #1a5490;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #2d72b8;
+            margin-top: 30px;
+        }
+
+        h3 {
+            color: #444;
+        }
+
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: Consolas, monospace;
+        }
+
+        pre {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .component {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #1a5490;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+
+        .flow {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Communication Bridge</h1>
+    <p><a href="index.html">← Back to Index</a></p>
+
+    <div class="component">
+        <h2>Overview</h2>
+        <p>The bridge enables bidirectional communication between the Angular UI (WebView2) and the WPF Shell using JSON
+            messages.</p>
+    </div>
+
+    <div class="component">
+        <h2>Angular → Shell (Requests)</h2>
+
+        <h3>Sending a Request</h3>
+        <pre>
+// In BridgeService
+postMessage(message: any): void {
+  const json = JSON.stringify(message);
+  (window as any).chrome?.webview?.postMessage(json);
+}
+
+// Example: Get directory contents
+this.postMessage({
+  action: 'getDirectoryContents',
+  path: '/path/to/directory',
+  paneId: 'left'
+});
+</pre>
+
+        <h3>Request Format</h3>
+        <pre>
+{
+  "action": "actionName",       // Required: action identifier
+  "path": "/some/path",         // Optional: target path
+  "paneId": "left|right",       // Optional: which pane initiated
+  "name": "newName",            // Optional: for create/rename
+  "items": ["/path1", "/path2"],// Optional: for batch operations
+  "targetPath": "/destination"  // Optional: for copy/move
+}
+</pre>
+    </div>
+
+    <div class="component">
+        <h2>Shell → Angular (Responses)</h2>
+
+        <h3>Receiving Messages</h3>
+        <pre>
+// In BridgeService constructor
+(window as any).chrome?.webview?.addEventListener('message', (event) => {
+  this.ngZone.run(() => {
+    this.handleMessage(event.data);
+  });
+});
+</pre>
+
+        <h3>Response Format</h3>
+        <pre>
+{
+  "action": "directoryContents", // Response type
+  "data": [...],                 // Payload (files, drives, etc.)
+  "currentPath": "/some/path",   // Current directory
+  "paneId": "left",              // Target pane
+  "error": null                  // Error message if failed
+}
+</pre>
+    </div>
+
+    <div class="component">
+        <h2>Message Flow Examples</h2>
+
+        <h3>1. Navigate to Directory</h3>
+        <div class="flow">
+            <strong>Request:</strong>
+            <code>{ action: "getDirectoryContents", path: "C:\\Users", paneId: "left" }</code><br>
+            <strong>Response:</strong>
+            <code>{ action: "directoryContents", data: [...files], currentPath: "C:\\Users", paneId: "left" }</code>
+        </div>
+
+        <h3>2. Copy Files</h3>
+        <div class="flow">
+            <strong>Request:</strong>
+            <code>{ action: "copyItems", items: ["C:\\file1.txt"], targetPath: "D:\\backup", paneId: "right" }</code><br>
+            <strong>Progress:</strong>
+            <code>{ action: "progress", message: "Copying file1.txt", percentage: 50 }</code><br>
+            <strong>Response:</strong> <code>{ action: "copyComplete", paneId: "right" }</code>
+        </div>
+
+        <h3>3. Create Folder</h3>
+        <div class="flow">
+            <strong>Request:</strong>
+            <code>{ action: "createDirectory", path: "C:\\Projects", name: "NewFolder", paneId: "left" }</code><br>
+            <strong>Response:</strong>
+            <code>{ action: "directoryCreated", paneId: "left", focusItem: "NewFolder" }</code>
+        </div>
+    </div>
+
+    <div class="component">
+        <h2>Action Reference</h2>
+        <table>
+            <tr>
+                <th>Request Action</th>
+                <th>Response Action</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>getDirectoryContents</td>
+                <td>directoryContents</td>
+                <td>List files and folders</td>
+            </tr>
+            <tr>
+                <td>getDrives</td>
+                <td>drives</td>
+                <td>List available drives</td>
+            </tr>
+            <tr>
+                <td>getAppInfo</td>
+                <td>appInfo</td>
+                <td>Application version info</td>
+            </tr>
+            <tr>
+                <td>getState</td>
+                <td>state</td>
+                <td>Load saved pane paths</td>
+            </tr>
+            <tr>
+                <td>saveState</td>
+                <td>-</td>
+                <td>Save current paths</td>
+            </tr>
+            <tr>
+                <td>createDirectory</td>
+                <td>directoryCreated</td>
+                <td>Create new folder</td>
+            </tr>
+            <tr>
+                <td>deleteItems</td>
+                <td>itemsDeleted</td>
+                <td>Delete files/folders</td>
+            </tr>
+            <tr>
+                <td>renameItem</td>
+                <td>itemRenamed</td>
+                <td>Rename file/folder</td>
+            </tr>
+            <tr>
+                <td>copyItems</td>
+                <td>copyComplete</td>
+                <td>Copy operation done</td>
+            </tr>
+            <tr>
+                <td>moveItems</td>
+                <td>moveComplete</td>
+                <td>Move operation done</td>
+            </tr>
+            <tr>
+                <td>openPath</td>
+                <td>-</td>
+                <td>Open file/folder in system</td>
+            </tr>
+            <tr>
+                <td>editFile</td>
+                <td>-</td>
+                <td>Open file in text editor</td>
+            </tr>
+            <tr>
+                <td>(auto)</td>
+                <td>fileSystemChanged</td>
+                <td>Directory contents changed</td>
+            </tr>
+            <tr>
+                <td>(auto)</td>
+                <td>progress</td>
+                <td>Operation progress update</td>
+            </tr>
+            <tr>
+                <td>(error)</td>
+                <td>error</td>
+                <td>Error occurred</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="component">
+        <h2>Error Handling</h2>
+        <pre>
+// Shell sends error response
+{
+  "action": "error",
+  "error": "Access denied: C:\\Windows\\System32\\config"
+}
+
+// Angular handles in BridgeService
+case 'error':
+  this.error$.next(response.error);
+  break;
+</pre>
+    </div>
+</body>
+
+</html>

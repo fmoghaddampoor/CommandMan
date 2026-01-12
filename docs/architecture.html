@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Architecture Overview - CommandMan</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+            background: #f8f9fa;
+        }
+
+        h1 {
+            color: #1a5490;
+            border-bottom: 2px solid #1a5490;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #2d72b8;
+            margin-top: 30px;
+        }
+
+        h3 {
+            color: #444;
+        }
+
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: Consolas, monospace;
+        }
+
+        pre {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: Consolas, monospace;
+        }
+
+        .component {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #1a5490;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+
+        .diagram {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: Consolas, monospace;
+            white-space: pre;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Architecture Overview</h1>
+    <p><a href="index.html">← Back to Index</a></p>
+
+    <div class="component">
+        <h2>High-Level Architecture</h2>
+        <div class="diagram">
+            ┌─────────────────────────────────────────────────────────────────┐
+            │ CommandMan Application │
+            ├─────────────────────────────────────────────────────────────────┤
+            │ │
+            │ ┌──────────────────────────────────────────────────────────┐ │
+            │ │ WPF Shell (.NET 10) │ │
+            │ │ ┌─────────────────┐ ┌────────────────────────────────┐ │ │
+            │ │ │ MainWindow │ │ Services Layer │ │ │
+            │ │ │ (WebView2 Host)│ │ ┌──────────┐ ┌─────────────┐ │ │ │
+            │ │ └────────┬────────┘ │ │FileSystem│ │DriveService │ │ │ │
+            │ │ │ │ │ Service │ └─────────────┘ │ │ │
+            │ │ │ │ └──────────┘ ┌─────────────┐ │ │ │
+            │ │ │ │ ┌──────────┐ │ConfigService│ │ │ │
+            │ │ ▼ │ │ Progress │ └─────────────┘ │ │ │
+            │ │ ┌─────────────────┐ │ │ Service │ │ │ │
+            │ │ │ ViewModel │◄─┼─►└──────────┘ │ │ │
+            │ │ │ (Request Router)│ └────────────────────────────────┘ │ │
+            │ │ └────────┬────────┘ │ │
+            │ └───────────┼───────────────────────────────────────────────┘ │
+            │ │ PostWebMessageAsJson / WebMessageReceived │
+            │ ▼ │
+            │ ┌───────────────────────────────────────────────────────────┐ │
+            │ │ Angular UI (WebView2) │ │
+            │ │ ┌─────────────────────────────────────────────────────┐ │ │
+            │ │ │ BridgeService │ │ │
+            │ │ │ (Message Handler - postMessage / onmessage) │ │ │
+            │ │ └────────────────────────┬────────────────────────────┘ │ │
+            │ │ │ │ │
+            │ │ ┌────────────┐ ┌────────────┐ ┌──────────────────────┐ │ │
+            │ │ │ Left Pane │ │ Right Pane │ │ Progress Overlay │ │ │
+            │ │ │ Component │ │ Component │ │ Component │ │ │
+            │ │ └────────────┘ └────────────┘ └──────────────────────┘ │ │
+            │ └───────────────────────────────────────────────────────────┘ │
+            └─────────────────────────────────────────────────────────────────┘
+        </div>
+    </div>
+
+    <div class="component">
+        <h2>Project Structure</h2>
+        <table>
+            <tr>
+                <th>Project</th>
+                <th>Technology</th>
+                <th>Purpose</th>
+            </tr>
+            <tr>
+                <td>CommandMan.Shell</td>
+                <td>.NET 10 WPF</td>
+                <td>Native Windows application hosting WebView2</td>
+            </tr>
+            <tr>
+                <td>CommandMan.UI</td>
+                <td>Angular 18+</td>
+                <td>Frontend UI rendered inside WebView2</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="component">
+        <h2>Data Flow</h2>
+        <h3>Request Flow (UI → Shell)</h3>
+        <ol>
+            <li>User interacts with Angular UI component</li>
+            <li><code>BridgeService</code> calls <code>postMessage()</code> with action and parameters</li>
+            <li>WebView2 receives message via <code>WebMessageReceived</code> event</li>
+            <li><code>MainWindowViewModel.HandleRequest()</code> routes to appropriate handler</li>
+            <li>Service layer executes the operation</li>
+        </ol>
+
+        <h3>Response Flow (Shell → UI)</h3>
+        <ol>
+            <li>Service operation completes with result</li>
+            <li><code>SendMessageToWebView()</code> serializes response to JSON</li>
+            <li><code>PostWebMessageAsJson()</code> sends to WebView2</li>
+            <li><code>BridgeService.handleMessage()</code> processes response</li>
+            <li>RxJS BehaviorSubjects update UI components</li>
+        </ol>
+    </div>
+
+    <div class="component">
+        <h2>Key Design Decisions</h2>
+        <ul>
+            <li><strong>Hybrid Architecture:</strong> Combines native Windows performance with modern web UI flexibility
+            </li>
+            <li><strong>Virtual Host Mapping:</strong> Uses <code>SetVirtualHostNameToFolderMapping</code> to serve
+                Angular files, avoiding file:// security restrictions</li>
+            <li><strong>Dual-Pane Design:</strong> Traditional file manager layout with left/right panes for easy file
+                operations</li>
+            <li><strong>Reactive State:</strong> Angular UI uses RxJS BehaviorSubjects for real-time updates</li>
+            <li><strong>FileSystemWatcher:</strong> Automatic refresh when file system changes occur</li>
+        </ul>
+    </div>
+</body>
+
+</html>

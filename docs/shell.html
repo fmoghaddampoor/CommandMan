@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>WPF Shell Documentation - CommandMan</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+            background: #f8f9fa;
+        }
+
+        h1 {
+            color: #1a5490;
+            border-bottom: 2px solid #1a5490;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #2d72b8;
+            margin-top: 30px;
+        }
+
+        h3 {
+            color: #444;
+        }
+
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: Consolas, monospace;
+        }
+
+        pre {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .component {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #1a5490;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>WPF Shell Documentation</h1>
+    <p><a href="index.html">← Back to Index</a></p>
+
+    <div class="component">
+        <h2>Project: CommandMan.Shell</h2>
+        <p>The Shell is a .NET 10 WPF application that hosts the Angular UI in a WebView2 control.</p>
+
+        <h3>Directory Structure</h3>
+        <pre>
+CommandMan.Shell/
+├── App.xaml / App.xaml.cs      # Application entry point
+├── MainWindow.xaml             # Main window with WebView2
+├── MainWindow.xaml.cs          # WebView2 initialization & messaging
+├── Models/                     # Data transfer objects
+│   ├── BridgeRequest.cs        # Incoming request from UI
+│   ├── BridgeResponse.cs       # Outgoing response to UI
+│   ├── FileSystemItem.cs       # File/folder representation
+│   ├── DriveItem.cs            # Drive information
+│   └── AppState.cs             # Persisted state
+├── Services/                   # Business logic layer
+│   ├── FileSystemService.cs    # File operations
+│   ├── DriveService.cs         # Drive enumeration
+│   ├── ConfigService.cs        # State persistence
+│   └── ProgressService.cs      # Progress reporting
+├── ViewModels/
+│   └── MainWindowViewModel.cs  # Request routing & handling
+└── wwwroot/                    # Angular build output
+</pre>
+    </div>
+
+    <div class="component">
+        <h2>MainWindow.xaml.cs</h2>
+        <p>The main window hosts WebView2 and handles bidirectional communication.</p>
+
+        <h3>Key Initialization</h3>
+        <pre>
+// Virtual host mapping for local file serving
+webView.CoreWebView2.SetVirtualHostNameToFolderMapping(
+    "commandman.local",
+    wwwrootPath,
+    CoreWebView2HostResourceAccessKind.Allow);
+
+webView.CoreWebView2.Navigate("https://commandman.local/index.html");
+</pre>
+
+        <h3>Message Handling</h3>
+        <pre>
+// Receive messages from Angular
+webView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
+
+// Send messages to Angular
+webView.CoreWebView2.PostWebMessageAsJson(json);
+</pre>
+    </div>
+
+    <div class="component">
+        <h2>MainWindowViewModel</h2>
+        <p>Routes incoming requests to appropriate handlers.</p>
+
+        <h3>Supported Actions</h3>
+        <table>
+            <tr>
+                <th>Action</th>
+                <th>Handler Method</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>getDirectoryContents</td>
+                <td>HandleGetDirectoryContents</td>
+                <td>List files and folders</td>
+            </tr>
+            <tr>
+                <td>getDrives</td>
+                <td>HandleGetDrives</td>
+                <td>List available drives</td>
+            </tr>
+            <tr>
+                <td>getAppInfo</td>
+                <td>HandleGetAppInfo</td>
+                <td>Get app version info</td>
+            </tr>
+            <tr>
+                <td>getState</td>
+                <td>HandleGetState</td>
+                <td>Load persisted paths</td>
+            </tr>
+            <tr>
+                <td>createDirectory</td>
+                <td>HandleCreateDirectory</td>
+                <td>Create new folder</td>
+            </tr>
+            <tr>
+                <td>deleteItems</td>
+                <td>HandleDeleteItems</td>
+                <td>Delete files/folders</td>
+            </tr>
+            <tr>
+                <td>renameItem</td>
+                <td>HandleRenameItem</td>
+                <td>Rename file/folder</td>
+            </tr>
+            <tr>
+                <td>copyItems</td>
+                <td>HandleCopyItems</td>
+                <td>Copy to target path</td>
+            </tr>
+            <tr>
+                <td>moveItems</td>
+                <td>HandleMoveItems</td>
+                <td>Move to target path</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="component">
+        <h2>Models</h2>
+
+        <h3>BridgeRequest</h3>
+        <pre>
+public class BridgeRequest
+{
+    public string Action { get; set; }      // Action name
+    public string? Path { get; set; }       // Target path
+    public string? PaneId { get; set; }     // "left" or "right"
+    public string? Name { get; set; }       // New name for create/rename
+    public string[]? Items { get; set; }    // Items for batch operations
+    public string? TargetPath { get; set; } // Destination for copy/move
+}
+</pre>
+
+        <h3>BridgeResponse</h3>
+        <pre>
+public class BridgeResponse
+{
+    public string Action { get; set; }      // Response action type
+    public object? Data { get; set; }       // Response payload
+    public string? Error { get; set; }      // Error message if failed
+    public string? PaneId { get; set; }     // Target pane
+    public string? CurrentPath { get; set; }// Current directory path
+}
+</pre>
+
+        <h3>FileSystemItem</h3>
+        <pre>
+public class FileSystemItem
+{
+    public string Name { get; set; }        // Display name
+    public string Path { get; set; }        // Full path
+    public bool IsDirectory { get; set; }   // true for folders
+    public long Size { get; set; }          // Size in bytes
+    public DateTime Modified { get; set; }  // Last modified time
+    public string? Extension { get; set; }  // File extension
+}
+</pre>
+    </div>
+</body>
+
+</html>

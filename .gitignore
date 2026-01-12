@@ -24,3 +24,10 @@ node_modules/
 *.userprefs
 *.launch
 *.lock
+
+# Build outputs
+CommandMan.Shell/wwwroot/
+output/
+
+# Compiled help
+docs/*.chm

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>CommandMan Documentation</title>
+<style>
+body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; line-height: 1.6; background: #f8f9fa; }
+h1 { color: #1a5490; border-bottom: 2px solid #1a5490; padding-bottom: 10px; }
+h2 { color: #2d72b8; margin-top: 30px; }
+h3 { color: #444; }
+code { background: #e9ecef; padding: 2px 6px; border-radius: 4px; font-family: Consolas, monospace; }
+pre { background: #263238; color: #aed581; padding: 15px; border-radius: 8px; overflow-x: auto; }
+.component { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.diagram { text-align: center; margin: 20px 0; }
+table { border-collapse: collapse; width: 100%; margin: 15px 0; }
+th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+th { background: #1a5490; color: white; }
+tr:nth-child(even) { background: #f2f2f2; }
+.note { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 12px; margin: 15px 0; }
+</style>
+</head>
+<body>
+<h1>CommandMan - File Manager</h1>
+<p><strong>Version:</strong> 1.0.0 | <strong>Platform:</strong> Windows</p>
+
+<div class="component">
+<h2>Welcome to CommandMan</h2>
+<p>CommandMan is a modern dual-pane file manager built with:</p>
+<ul>
+<li><strong>WPF Shell</strong> - .NET 10.0 Windows Presentation Foundation</li>
+<li><strong>Angular UI</strong> - Angular 18+ frontend rendered in WebView2</li>
+<li><strong>WebView2 Bridge</strong> - Bidirectional communication layer</li>
+</ul>
+</div>
+
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="architecture.html">Architecture Overview</a></li>
+<li><a href="shell.html">WPF Shell Documentation</a></li>
+<li><a href="ui.html">Angular UI Documentation</a></li>
+<li><a href="bridge.html">Communication Bridge</a></li>
+<li><a href="services.html">Services Reference</a></li>
+<li><a href="building.html">Building & Deployment</a></li>
+</ul>
+
+<h2>Quick Start</h2>
+<div class="component">
+<h3>Running in Development</h3>
+<pre>
+# Terminal 1: Start Angular dev server
+cd CommandMan.UI
+npm install
+npm run start
+
+# Terminal 2: Run WPF application
+cd CommandMan.Shell
+dotnet run
+</pre>
+
+<h3>Building for Production</h3>
+<pre>
+# Run the build script
+.\build.ps1 -Clean
+</pre>
+</div>
+
+<div class="note">
+<strong>Note:</strong> CommandMan uses WebView2 runtime which is included with Windows 11 and available as a separate download for Windows 10.
+</div>
+</body>
+</html>

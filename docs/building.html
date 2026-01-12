@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Building & Deployment - CommandMan</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+            background: #f8f9fa;
+        }
+
+        h1 {
+            color: #1a5490;
+            border-bottom: 2px solid #1a5490;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #2d72b8;
+            margin-top: 30px;
+        }
+
+        h3 {
+            color: #444;
+        }
+
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: Consolas, monospace;
+        }
+
+        pre {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .component {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #1a5490;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+
+        .note {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 12px;
+            margin: 15px 0;
+        }
+
+        .warning {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 12px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Building & Deployment</h1>
+    <p><a href="index.html">← Back to Index</a></p>
+
+    <div class="component">
+        <h2>Prerequisites</h2>
+        <table>
+            <tr>
+                <th>Tool</th>
+                <th>Version</th>
+                <th>Purpose</th>
+            </tr>
+            <tr>
+                <td>.NET SDK</td>
+                <td>10.0+</td>
+                <td>Build WPF Shell</td>
+            </tr>
+            <tr>
+                <td>Node.js</td>
+                <td>18+</td>
+                <td>Build Angular UI</td>
+            </tr>
+            <tr>
+                <td>npm</td>
+                <td>9+</td>
+                <td>Package management</td>
+            </tr>
+            <tr>
+                <td>Inno Setup</td>
+                <td>6.x</td>
+                <td>Create Windows installer (optional)</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="component">
+        <h2>Build Script</h2>
+        <p>Use the provided <code>build.ps1</code> PowerShell script for automated builds.</p>
+
+        <h3>Usage</h3>
+        <pre>
+# Full build with installer
+.\build.ps1
+
+# Clean build (removes previous outputs)
+.\build.ps1 -Clean
+
+# Skip installer creation
+.\build.ps1 -SkipInstaller
+</pre>
+
+        <h3>Build Steps</h3>
+        <ol>
+            <li><strong>Clean</strong> (optional) - Remove bin, obj, wwwroot, and output folders</li>
+            <li><strong>Angular Build</strong> - npm install + npm run build → outputs to wwwroot/browser</li>
+            <li><strong>.NET Publish</strong> - dotnet publish -c Release → self-contained app</li>
+            <li><strong>Installer</strong> (optional) - ISCC.exe compiles installer.iss</li>
+        </ol>
+    </div>
+
+    <div class="component">
+        <h2>Manual Build Steps</h2>
+
+        <h3>1. Build Angular UI</h3>
+        <pre>
+cd CommandMan.UI
+npm install
+npm run build
+</pre>
+        <p>Output: <code>CommandMan.Shell/wwwroot/browser/</code></p>
+
+        <h3>2. Build WPF Shell</h3>
+        <pre>
+cd CommandMan.Shell
+dotnet publish -c Release
+</pre>
+        <p>Output: <code>bin/Release/net10.0-windows/win-x64/publish/</code></p>
+
+        <h3>3. Create Installer (Optional)</h3>
+        <pre>
+"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+</pre>
+        <p>Output: <code>output/CommandMan-Setup-1.0.0.exe</code></p>
+    </div>
+
+    <div class="component">
+        <h2>Installer Configuration</h2>
+        <p>The <code>installer.iss</code> Inno Setup script configures the Windows installer.</p>
+
+        <h3>Key Settings</h3>
+        <pre>
+[Setup]
+AppName=CommandMan
+AppVersion=1.0.0
+DefaultDirName={autopf}\CommandMan
+PrivilegesRequired=lowest
+DisableDirPage=no              ; Always ask for install location
+
+[Files]
+Source: "CommandMan.Shell\bin\Release\...\publish\*"
+DestDir: "{app}"
+Flags: ignoreversion recursesubdirs
+
+[Icons]
+; Desktop and Start Menu shortcuts
+</pre>
+    </div>
+
+    <div class="component">
+        <h2>Output Files</h2>
+        <table>
+            <tr>
+                <th>Path</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>CommandMan.Shell/wwwroot/browser/</td>
+                <td>Angular production build</td>
+            </tr>
+            <tr>
+                <td>CommandMan.Shell/bin/Release/.../publish/</td>
+                <td>Self-contained application</td>
+            </tr>
+            <tr>
+                <td>output/CommandMan-Setup-1.0.0.exe</td>
+                <td>Windows installer (~50MB)</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="component">
+        <h2>Development Mode</h2>
+        <p>For development, run Angular dev server and WPF separately:</p>
+
+        <h3>Terminal 1: Angular</h3>
+        <pre>
+cd CommandMan.UI
+npm start
+# Runs at http://localhost:4200
+</pre>
+
+        <h3>Terminal 2: WPF</h3>
+        <pre>
+cd CommandMan.Shell
+dotnet run
+# Auto-connects to localhost:4200 in dev mode
+</pre>
+
+        <div class="note">
+            <strong>Development Detection:</strong> MainWindow checks for <code>wwwroot/browser/index.html</code>.
+            If not found, it connects to the Angular dev server at <code>http://localhost:4200</code>.
+        </div>
+    </div>
+
+    <div class="component">
+        <h2>Troubleshooting</h2>
+
+        <h3>Empty UI After Installation</h3>
+        <div class="warning">
+            <strong>Cause:</strong> file:// protocol blocks ES modules.<br>
+            <strong>Fix:</strong> Use <code>SetVirtualHostNameToFolderMapping</code> to serve via virtual host.
+        </div>
+
+        <h3>WebView2 Not Found</h3>
+        <div class="warning">
+            <strong>Cause:</strong> WebView2 runtime not installed.<br>
+            <strong>Fix:</strong> Download from <a
+                href="https://developer.microsoft.com/en-us/microsoft-edge/webview2/">Microsoft WebView2</a>.
+        </div>
+
+        <h3>Angular Build Errors</h3>
+        <pre>
+# Clear cache and rebuild
+rm -rf node_modules
+npm install
+npm run build
+</pre>
+    </div>
+</body>
+
+</html>

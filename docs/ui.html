@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Angular UI Documentation - CommandMan</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+            background: #f8f9fa;
+        }
+
+        h1 {
+            color: #1a5490;
+            border-bottom: 2px solid #1a5490;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #2d72b8;
+            margin-top: 30px;
+        }
+
+        h3 {
+            color: #444;
+        }
+
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: Consolas, monospace;
+        }
+
+        pre {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .component {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #1a5490;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Angular UI Documentation</h1>
+    <p><a href="index.html">← Back to Index</a></p>
+
+    <div class="component">
+        <h2>Project: CommandMan.UI</h2>
+        <p>The UI is an Angular 18+ application rendered inside WebView2.</p>
+
+        <h3>Directory Structure</h3>
+        <pre>
+CommandMan.UI/src/app/
+├── app.component.ts/html/scss  # Main application component
+├── app.config.ts               # Angular configuration
+├── services/
+│   ├── bridge.service.ts       # WebView2 communication
+│   └── progress.service.ts     # Progress state management
+├── file-pane/                  # File listing component
+├── breadcrumb/                 # Path navigation component
+├── progress-overlay/           # Progress modal component
+├── input-dialog/               # Text input dialog
+└── about-dialog/               # About application dialog
+</pre>
+    </div>
+
+    <div class="component">
+        <h2>AppComponent</h2>
+        <p>The root component that orchestrates the dual-pane file manager layout.</p>
+
+        <h3>Template Structure</h3>
+        <pre>
+&lt;div class="app-container"&gt;
+  &lt;header&gt;
+    &lt;!-- Title bar with app name and version --&gt;
+  &lt;/header&gt;
+
+  &lt;div class="main-content"&gt;
+    &lt;div class="pane left-pane"&gt;
+      &lt;app-breadcrumb&gt;&lt;/app-breadcrumb&gt;
+      &lt;app-file-pane paneId="left"&gt;&lt;/app-file-pane&gt;
+    &lt;/div&gt;
+
+    &lt;div class="pane right-pane"&gt;
+      &lt;app-breadcrumb&gt;&lt;/app-breadcrumb&gt;
+      &lt;app-file-pane paneId="right"&gt;&lt;/app-file-pane&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;footer&gt;
+    &lt;!-- Function key buttons --&gt;
+  &lt;/footer&gt;
+
+  &lt;app-progress-overlay&gt;&lt;/app-progress-overlay&gt;
+&lt;/div&gt;
+</pre>
+    </div>
+
+    <div class="component">
+        <h2>Components</h2>
+
+        <h3>FilePaneComponent</h3>
+        <table>
+            <tr>
+                <th>Input/Output</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>@Input() paneId</td>
+                <td>'left' | 'right'</td>
+                <td>Identifies which pane</td>
+            </tr>
+            <tr>
+                <td>items</td>
+                <td>FileSystemItem[]</td>
+                <td>List of files/folders</td>
+            </tr>
+            <tr>
+                <td>currentPath</td>
+                <td>string</td>
+                <td>Current directory path</td>
+            </tr>
+            <tr>
+                <td>selectedItems</td>
+                <td>Set&lt;string&gt;</td>
+                <td>Selected item paths</td>
+            </tr>
+        </table>
+
+        <h3>BreadcrumbComponent</h3>
+        <p>Displays and navigates the current path hierarchy.</p>
+
+        <h3>ProgressOverlayComponent</h3>
+        <p>Shows operation progress with percentage and current file.</p>
+
+        <h3>InputDialogComponent</h3>
+        <p>Generic dialog for text input (create folder, rename).</p>
+    </div>
+
+    <div class="component">
+        <h2>State Management</h2>
+        <p>The UI uses RxJS BehaviorSubjects for reactive state management.</p>
+
+        <h3>Pane State</h3>
+        <pre>
+interface PaneState {
+  items: FileSystemItem[];    // Current directory contents
+  currentPath: string;        // Current path
+  focusItem?: string;         // Item to focus after operation
+}
+
+// Observable streams
+leftPane$: BehaviorSubject&lt;PaneState&gt;
+rightPane$: BehaviorSubject&lt;PaneState&gt;
+drives$: BehaviorSubject&lt;DriveItem[]&gt;
+</pre>
+    </div>
+
+    <div class="component">
+        <h2>Keyboard Shortcuts</h2>
+        <table>
+            <tr>
+                <th>Key</th>
+                <th>Action</th>
+            </tr>
+            <tr>
+                <td>F3</td>
+                <td>View selected file</td>
+            </tr>
+            <tr>
+                <td>F4</td>
+                <td>Edit selected file</td>
+            </tr>
+            <tr>
+                <td>F5</td>
+                <td>Copy selected to other pane</td>
+            </tr>
+            <tr>
+                <td>F6</td>
+                <td>Move selected to other pane</td>
+            </tr>
+            <tr>
+                <td>F7</td>
+                <td>Create new directory</td>
+            </tr>
+            <tr>
+                <td>F8 / Delete</td>
+                <td>Delete selected items</td>
+            </tr>
+            <tr>
+                <td>Enter</td>
+                <td>Open selected item</td>
+            </tr>
+            <tr>
+                <td>Tab</td>
+                <td>Switch active pane</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="component">
+        <h2>Styling</h2>
+        <p>The UI uses a dark Catppuccin-inspired theme with SCSS.</p>
+
+        <h3>Color Palette</h3>
+        <pre>
+$background: #11111b;      // Base background
+$surface: #1e1e2e;         // Panel background
+$text: #cdd6f4;            // Primary text
+$accent: #89b4fa;          // Accent color (blue)
+$selected: #313244;        // Selected item background
+</pre>
+    </div>
+</body>
+
+</html>
