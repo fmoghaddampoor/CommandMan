@@ -53,10 +53,18 @@ public partial class MainWindow : Window
         webView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
 
         // Navigate to the Angular app (development server or built files)
-        var angularPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "index.html");
-        if (File.Exists(angularPath))
+        // Angular 18+ outputs to wwwroot/browser/
+        var wwwrootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "browser");
+        if (Directory.Exists(wwwrootPath))
         {
-            webView.CoreWebView2.Navigate(angularPath);
+            // Use virtual host mapping to serve local files - this avoids file:// protocol
+            // security restrictions that block ES modules
+            webView.CoreWebView2.SetVirtualHostNameToFolderMapping(
+                "commandman.local",
+                wwwrootPath,
+                CoreWebView2HostResourceAccessKind.Allow);
+            
+            webView.CoreWebView2.Navigate("https://commandman.local/index.html");
         }
         else
         {
