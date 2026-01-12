@@ -1,5 +1,7 @@
 # ⚡️ CommandMan
 
+![CommandMan Screenshot](docs/images/screenshot.png)
+
 **CommandMan** is a modern, high-performance dual-pane file manager designed for power users who demand speed, precision, and a premium aesthetic. Built with a hybrid architecture of WPF and Angular, it combines the robustness of .NET with the fluidity of modern web technologies.
 
 ---
